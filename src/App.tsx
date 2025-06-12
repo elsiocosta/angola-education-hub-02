@@ -10,6 +10,8 @@ import Search from "./pages/Search";
 import Institution from "./pages/Institution";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import RegisterOptions from "./components/RegisterOptions";
+import VisitorRegister from "./components/VisitorRegister";
 import Dashboard from "./pages/Dashboard";
 import Application from "./pages/Application";
 import Admin from "./pages/Admin";
@@ -30,8 +32,10 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/search" element={<Search />} />
           <Route path="/institution/:id" element={<Institution />} />
+          <Route path="/register" element={<RegisterOptions />} />
+          <Route path="/register/visitor" element={<VisitorRegister />} />
+          <Route path="/register/institution" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/application/:institutionId" element={<Application />} />
           <Route path="/admin" element={<Admin />} />
