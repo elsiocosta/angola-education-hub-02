@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Users, Building, BarChart3, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Users, Building, BarChart3, DollarSign, AlertCircle, CheckCircle, Clock, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Layout from '@/components/Layout';
+import { Link } from 'react-router-dom';
 
 const Admin = () => {
   const stats = [
@@ -36,9 +37,12 @@ const Admin = () => {
               <h1 className="text-3xl font-bold text-gray-900">Administração</h1>
               <p className="text-gray-600">Gestão da plataforma Ango Education</p>
             </div>
-            <Button className="bg-gradient-to-r from-blue-600 to-green-600">
-              Relatório Completo
-            </Button>
+            <Link to="/report">
+              <Button className="bg-gradient-to-r from-blue-600 to-green-600">
+                <FileText className="h-4 w-4 mr-2" />
+                Relatório Completo
+              </Button>
+            </Link>
           </div>
 
           {/* Stats Cards */}

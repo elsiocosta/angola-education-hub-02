@@ -15,6 +15,7 @@ import VisitorRegister from "./components/VisitorRegister";
 import Dashboard from "./pages/Dashboard";
 import Application from "./pages/Application";
 import Admin from "./pages/Admin";
+import Report from "./pages/Report";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import Support from "./pages/Support";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/application/:institutionId" element={<Application />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/report" element={<Report />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/about" element={<About />} />
           <Route path="/support" element={<Support />} />
