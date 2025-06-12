@@ -10,6 +10,8 @@ import HeroSection from '@/components/HeroSection';
 import MapSection from '@/components/MapSection';
 import FeaturedInstitutions from '@/components/FeaturedInstitutions';
 import StatsSection from '@/components/StatsSection';
+import Layout from '@/components/Layout';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,37 +32,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white/95 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
-                <GraduationCap className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                  Ango Education
-                </h1>
-                <p className="text-sm text-gray-600">A rede digital do ensino angolano</p>
-              </div>
-            </div>
-            <nav className="hidden md:flex items-center space-x-6">
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors">Instituições</a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors">Mapa</a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors">Sobre</a>
-              <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
-                Entrar
-              </Button>
-              <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-                Registar Instituição
-              </Button>
-            </nav>
-          </div>
-        </div>
-      </header>
-
+    <Layout>
       {/* Hero Section */}
       <HeroSection />
 
@@ -115,10 +87,12 @@ const Index = () => {
                   </SelectContent>
                 </Select>
 
-                <Button className="h-12 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-                  <Search className="h-5 w-5 mr-2" />
-                  Pesquisar
-                </Button>
+                <Link to="/search">
+                  <Button className="h-12 w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+                    <Search className="h-5 w-5 mr-2" />
+                    Pesquisar
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -253,71 +227,27 @@ const Index = () => {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-                    Começar Agora
-                  </Button>
+                  <Link to="/register" className="w-full">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+                      Começar Agora
+                    </Button>
+                  </Link>
                 </CardFooter>
               </Card>
             ))}
           </div>
+          
+          <div className="text-center mt-12">
+            <Link to="/pricing">
+              <Button variant="outline" size="lg">
+                Ver Todos os Detalhes dos Planos
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
-                  <GraduationCap className="h-8 w-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold">Ango Education</h3>
-                  <p className="text-gray-400 text-sm">A rede digital do ensino angolano</p>
-                </div>
-              </div>
-              <p className="text-gray-400">
-                Conectando estudantes às melhores instituições de ensino em todo Angola.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Plataforma</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Como Funciona</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Preços</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Funcionalidades</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Suporte</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Central de Ajuda</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contacto</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Documentação</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Empresa</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Sobre Nós</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Parcerias</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2024 Ango Education. Todos os direitos reservados.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </Layout>
   );
 };
 
