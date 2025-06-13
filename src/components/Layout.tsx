@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { GraduationCap, Menu, X, ChevronDown } from 'lucide-react';
@@ -20,6 +19,11 @@ const Layout = ({ children }: LayoutProps) => {
       description: 'Pesquisar escolas e universidades'
     },
     {
+      name: 'Feed',
+      href: '/feed',
+      description: 'Publicações das instituições'
+    },
+    {
       name: 'Recursos',
       href: '#',
       hasDropdown: true,
@@ -28,6 +32,18 @@ const Layout = ({ children }: LayoutProps) => {
         { name: 'Blog', href: '/blog', description: 'Artigos sobre educação' },
         { name: 'Central de Ajuda', href: '/support', description: 'Suporte e tutoriais' },
         { name: 'Relatórios', href: '/report', description: 'Estatísticas da plataforma' }
+      ]
+    },
+    {
+      name: 'Gestão',
+      href: '#',
+      hasDropdown: true,
+      dropdownItems: [
+        { name: 'Painel do Estudante', href: '/dashboard/student', description: 'Dashboard do estudante' },
+        { name: 'Painel Institucional', href: '/dashboard/institution', description: 'Dashboard da instituição' },
+        { name: 'Gestão de Convites', href: '/invites', description: 'Convidar membros' },
+        { name: 'Gestão de Cursos', href: '/courses', description: 'Gerir cursos e turmas' },
+        { name: 'Mensagens Internas', href: '/messages', description: 'Comunicação interna' }
       ]
     },
     {
@@ -210,6 +226,7 @@ const Layout = ({ children }: LayoutProps) => {
               <h4 className="font-semibold mb-4">Plataforma</h4>
               <ul className="space-y-2 text-gray-400">
                 <li><Link to="/search" className="hover:text-white transition-colors">Buscar Instituições</Link></li>
+                <li><Link to="/feed" className="hover:text-white transition-colors">Feed Educacional</Link></li>
                 <li><Link to="/pricing" className="hover:text-white transition-colors">Preços</Link></li>
                 <li><Link to="/register" className="hover:text-white transition-colors">Registar Instituição</Link></li>
                 <li><Link to="/application/example" className="hover:text-white transition-colors">Candidaturas</Link></li>
@@ -217,22 +234,25 @@ const Layout = ({ children }: LayoutProps) => {
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Recursos</h4>
+              <h4 className="font-semibold mb-4">Gestão</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link to="/dashboard/student" className="hover:text-white transition-colors">Dashboard Estudante</Link></li>
+                <li><Link to="/dashboard/institution" className="hover:text-white transition-colors">Dashboard Instituição</Link></li>
+                <li><Link to="/invites" className="hover:text-white transition-colors">Gestão de Convites</Link></li>
+                <li><Link to="/courses" className="hover:text-white transition-colors">Gestão de Cursos</Link></li>
+                <li><Link to="/messages" className="hover:text-white transition-colors">Mensagens</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">Recursos & Legal</h4>
               <ul className="space-y-2 text-gray-400">
                 <li><Link to="/about" className="hover:text-white transition-colors">Sobre Nós</Link></li>
                 <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
                 <li><Link to="/support" className="hover:text-white transition-colors">Central de Ajuda</Link></li>
                 <li><Link to="/report" className="hover:text-white transition-colors">Relatórios</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-gray-400">
                 <li><Link to="/terms" className="hover:text-white transition-colors">Termos de Uso</Link></li>
                 <li><Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidade</Link></li>
-                <li><Link to="/login" className="hover:text-white transition-colors">Entrar</Link></li>
-                <li><Link to="/admin" className="hover:text-white transition-colors">Administração</Link></li>
               </ul>
             </div>
           </div>

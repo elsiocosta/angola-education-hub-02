@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,12 @@ import Register from "./pages/Register";
 import RegisterOptions from "./components/RegisterOptions";
 import VisitorRegister from "./components/VisitorRegister";
 import Dashboard from "./pages/Dashboard";
+import StudentDashboard from "./pages/StudentDashboard";
+import InstitutionDashboard from "./pages/InstitutionDashboard";
+import InviteManagement from "./pages/InviteManagement";
+import CourseManagement from "./pages/CourseManagement";
+import InternalMessages from "./pages/InternalMessages";
+import Feed from "./pages/Feed";
 import Application from "./pages/Application";
 import Admin from "./pages/Admin";
 import Report from "./pages/Report";
@@ -39,7 +44,20 @@ const App = () => (
           <Route path="/register/visitor" element={<VisitorRegister />} />
           <Route path="/register/institution" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          
+          {/* Dashboard Routes */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/student" element={<StudentDashboard />} />
+          <Route path="/dashboard/institution" element={<InstitutionDashboard />} />
+          
+          {/* Institution Management Routes */}
+          <Route path="/invites" element={<InviteManagement />} />
+          <Route path="/courses" element={<CourseManagement />} />
+          <Route path="/messages" element={<InternalMessages />} />
+          
+          {/* Social Feed */}
+          <Route path="/feed" element={<Feed />} />
+          
           <Route path="/application/:institutionId" element={<Application />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/report" element={<Report />} />
