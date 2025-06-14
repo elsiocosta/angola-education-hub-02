@@ -1,14 +1,11 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* --- Identidade Visual Ango Education --- */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
-    /* Paleta principal baseada na marca e bandeira de Angola */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -18,109 +15,89 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 156 61% 34%; /* Verde Ango Education */
+    --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 216 99% 60%; /* Azul Ango Education */
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 46 97% 63%; /* Amarelo inspirado na bandeira */
-    --accent-foreground: 49 61% 19%;
-
-    --danger: 0 68% 52%; /* Inspirado no vermelho da bandeira */
-    --danger-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Gradientes da Marca */
-    --hero-gradient: linear-gradient(90deg, #0466c8 0%, #1cb59f 100%);
-    --angular-gradient: linear-gradient(120deg, #d90429 5%, #22223b 95%);
-    --gradient-yellow-accent: linear-gradient(90deg, #ffe066 0%, #fab005 100%);
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
 
-    /* Definição de fonte principal */
-    --font-base: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: var(--font-base);
-    background: linear-gradient(140deg, #e8f1fb 0%, #f0fdf4 100%);
-    /* animação de fade in ao carregar */
-    animation: fade-in 1s cubic-bezier(.66,0,0,1) both;
+    @apply bg-background text-foreground;
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-base);
-    color: hsl(var(--primary));
-    font-weight: 700;
-  }
-}
-
-/* --- Animações extras (pulse, underline, hover-scale) --- */
-@layer utilities {
-  .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
-  }
-
-  .hero-gradient-text {
-    background: var(--hero-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-  }
-
-  .highlight-angola {
-    background: var(--angular-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-  }
-
-  .btn-yellow {
-    @apply bg-yellow-400 text-yellow-900 font-bold hover:bg-yellow-500 transition-all;
-  }
-
-  .pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-}
-
-@keyframes pulse {
-  0%,100% { opacity: 1 }
-  50% { opacity: 0.5 }
-}
-
-/* --- Exemplo: headlines destacadas para Hero --- */
-.hero-headline {
-  @apply text-5xl lg:text-6xl font-bold leading-tight hero-gradient-text;
-}
-
-/* --- Cards Visuais Aprimorados --- */
-.card-branded {
-  @apply bg-white shadow-lg rounded-2xl border-2 border-blue-100 transition hover:shadow-xl hover-scale;
-}
-
-/* --- Formulários com feedback visual --- */
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: hsl(var(--primary));
-  outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.25);
-  transition: box-shadow .2s;
-}
-
-/* --- Transição suave para dark mode --- */
-body, .bg-background {
-  transition: background 0.3s;
-}
-
-/* --- Melhor contraste para dark --- */
-.dark body {
-  background: linear-gradient(120deg, #0f172a 0%, #256d85 100%);
 }
