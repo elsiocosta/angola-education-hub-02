@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +16,7 @@ import {
   Timer
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { sendInviteEmail } from '@/utils/sendInviteEmail';
 
 const InviteManagement = () => {
   const { toast } = useToast();
@@ -25,6 +25,7 @@ const InviteManagement = () => {
     role: 'aluno',
     name: ''
   });
+  const [loading, setLoading] = useState(false);
 
   const activeInvites = [
     {
@@ -71,7 +72,7 @@ const InviteManagement = () => {
     { value: 'coordenador', label: 'Coordenador' }
   ];
 
-  const handleSendInvite = () => {
+  const handleSendInvite = async () => {
     if (!inviteForm.email || !inviteForm.name) {
       toast({
         title: "Erro",
@@ -81,14 +82,30 @@ const InviteManagement = () => {
       return;
     }
 
-    // Simular envio do convite
-    toast({
-      title: "Convite Enviado",
-      description: `Convite enviado para ${inviteForm.email} com o cargo de ${inviteForm.role}.`,
-    });
+    setLoading(true);
+    const inviteUrl = `${window.location.origin}/register/invite/${Math.random().toString(36).substr(2, 10)}`;
 
-    // Reset form
-    setInviteForm({ email: '', role: 'aluno', name: '' });
+    try {
+      await sendInviteEmail({
+        email: inviteForm.email,
+        name: inviteForm.name,
+        role: inviteForm.role,
+        inviteUrl
+      });
+      toast({
+        title: "Convite Enviado",
+        description: `Convite enviado para ${inviteForm.email} com o cargo de ${inviteForm.role}.`,
+      });
+      setInviteForm({ email: '', role: 'aluno', name: '' });
+    } catch (err: any) {
+      toast({
+        title: "Falha ao enviar convite",
+        description: err.message || "Erro inesperado ao tentar enviar o convite.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyInviteLink = (token: string) => {
@@ -204,9 +221,10 @@ const InviteManagement = () => {
                   <Button 
                     onClick={handleSendInvite} 
                     className="w-full"
+                    disabled={loading}
                   >
                     <Mail className="h-4 w-4 mr-2" />
-                    Enviar Convite
+                    {loading ? "Enviando..." : "Enviar Convite"}
                   </Button>
                 </CardContent>
               </Card>
