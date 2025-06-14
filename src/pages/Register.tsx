@@ -6,8 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Layout from '@/components/Layout';
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 
 const Register = () => {
+  const { signup } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -32,9 +36,21 @@ const Register = () => {
     'Malanje', 'Moxico', 'Moxico Leste', 'Namibe', 'Uíge', 'Zaire'
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration attempt:', formData);
+    if (!formData.password || formData.password.length < 6) {
+      toast({ title: "Senha curta", description: "Mínimo 6 caracteres", variant: "destructive" });
+      return;
+    }
+    // Outras validações podem ser incrementadas aqui
+    const ok = await signup({
+      email: formData.email,
+      password: formData.password,
+      name: formData.name
+    });
+    if (ok) {
+      // resetar formulário ou redirecionar, se desejar
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {

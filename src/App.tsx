@@ -27,6 +27,7 @@ import Support from "./pages/Support";
 import Blog from "./pages/Blog";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
 
@@ -35,42 +36,44 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/institution/:id" element={<Institution />} />
-          <Route path="/register" element={<RegisterOptions />} />
-          <Route path="/register/visitor" element={<VisitorRegister />} />
-          <Route path="/register/institution" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          
-          {/* Dashboard Routes */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/student" element={<StudentDashboard />} />
-          <Route path="/dashboard/institution" element={<InstitutionDashboard />} />
-          
-          {/* Institution Management Routes */}
-          <Route path="/invites" element={<InviteManagement />} />
-          <Route path="/courses" element={<CourseManagement />} />
-          <Route path="/messages" element={<InternalMessages />} />
-          
-          {/* Social Feed */}
-          <Route path="/feed" element={<Feed />} />
-          
-          <Route path="/application/:institutionId" element={<Application />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/report" element={<Report />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/institution/:id" element={<Institution />} />
+            <Route path="/register" element={<RegisterOptions />} />
+            <Route path="/register/visitor" element={<VisitorRegister />} />
+            <Route path="/register/institution" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            
+            {/* Dashboard Routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/student" element={<StudentDashboard />} />
+            <Route path="/dashboard/institution" element={<InstitutionDashboard />} />
+            
+            {/* Institution Management Routes */}
+            <Route path="/invites" element={<InviteManagement />} />
+            <Route path="/courses" element={<CourseManagement />} />
+            <Route path="/messages" element={<InternalMessages />} />
+            
+            {/* Social Feed */}
+            <Route path="/feed" element={<Feed />} />
+            
+            <Route path="/application/:institutionId" element={<Application />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

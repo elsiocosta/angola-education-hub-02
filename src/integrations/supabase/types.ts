@@ -9,7 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      documents: {
+        Row: {
+          file_path: string
+          id: string
+          uploaded_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          file_path: string
+          id?: string
+          uploaded_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          file_path?: string
+          id?: string
+          uploaded_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      invites: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          institution: string | null
+          role: string
+          token: string | null
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          institution?: string | null
+          role: string
+          token?: string | null
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          institution?: string | null
+          role?: string
+          token?: string | null
+          used?: boolean | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          institution_type: string | null
+          name: string | null
+          province: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          institution_type?: string | null
+          name?: string | null
+          province?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          institution_type?: string | null
+          name?: string | null
+          province?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
