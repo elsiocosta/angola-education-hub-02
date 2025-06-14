@@ -17,35 +17,29 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
 
-      if (error) {
-        toast({
-          title: "Erro ao entrar",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
+    if (error) {
       toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo(a) de volta.",
-        duration: 3000,
-      });
-
-      // window.location.href = "/dashboard"; // ou useNavigate
-    } catch (err: any) {
-      toast({
-        title: "Erro crítico de autenticação",
-        description: err.message || "Falha inesperada. Contate o suporte.",
+        title: "Erro ao entrar",
+        description: error.message,
         variant: "destructive",
       });
+      return;
     }
+
+    toast({
+      title: "Login realizado com sucesso!",
+      description: "Bem-vindo(a) de volta.",
+      duration: 3000,
+    });
+
+    // Redirecionar após login
+    // window.location.href = "/dashboard"; // OU utilize useNavigate
   };
 
   return (
