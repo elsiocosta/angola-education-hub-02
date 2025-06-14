@@ -11,7 +11,8 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  // Em vez de um booleano para cada dropdown, usa-se uma string indicando qual está aberto.
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const navigationItems = [
     {
@@ -91,7 +92,9 @@ const Layout = ({ children }: LayoutProps) => {
                   {item.hasDropdown ? (
                     <div className="relative">
                       <button
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        onClick={() =>
+                          setOpenDropdown(openDropdown === item.name ? null : item.name)
+                        }
                         className={`flex items-center space-x-1 transition-colors ${
                           location.pathname.includes(item.href) ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
                         }`}
@@ -100,14 +103,14 @@ const Layout = ({ children }: LayoutProps) => {
                         <ChevronDown className="h-4 w-4" />
                       </button>
                       
-                      {dropdownOpen && (
+                      {openDropdown === item.name && (
                         <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                           {item.dropdownItems?.map((dropdownItem) => (
                             <Link
                               key={dropdownItem.name}
                               to={dropdownItem.href}
                               className="block px-4 py-3 hover:bg-gray-50 transition-colors"
-                              onClick={() => setDropdownOpen(false)}
+                              onClick={() => setOpenDropdown(null)}
                             >
                               <div className="font-medium text-gray-900">{dropdownItem.name}</div>
                               <div className="text-sm text-gray-500">{dropdownItem.description}</div>
@@ -212,7 +215,6 @@ const Layout = ({ children }: LayoutProps) => {
                     )}
                   </div>
                 ))}
-                
                 {/* Mobile Social Media */}
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center space-x-4 mb-4">
@@ -260,7 +262,7 @@ const Layout = ({ children }: LayoutProps) => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
@@ -302,41 +304,42 @@ const Layout = ({ children }: LayoutProps) => {
               </div>
             </div>
             
-            <div>
-              <h4 className="font-semibold mb-4">Níveis de Ensino</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/search?level=university" className="hover:text-white transition-colors">Universidades</Link></li>
-                <li><Link to="/search?level=high-school" className="hover:text-white transition-colors">Ensino Médio</Link></li>
-                <li><Link to="/search?level=secondary" className="hover:text-white transition-colors">Ensino Secundário</Link></li>
-                <li><Link to="/search?level=primary" className="hover:text-white transition-colors">Ensino Primário</Link></li>
-                <li><Link to="/feed" className="hover:text-white transition-colors">Feed Educacional</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Plataforma</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/search" className="hover:text-white transition-colors">Buscar Instituições</Link></li>
-                <li><Link to="/pricing" className="hover:text-white transition-colors">Preços</Link></li>
-                <li><Link to="/register" className="hover:text-white transition-colors">Registar Instituição</Link></li>
-                <li><Link to="/application/example" className="hover:text-white transition-colors">Candidaturas</Link></li>
-                <li><Link to="/admin" className="hover:text-white transition-colors">Administração</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Gestão & Recursos</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link to="/dashboard/student" className="hover:text-white transition-colors">Dashboard Estudante</Link></li>
-                <li><Link to="/dashboard/institution" className="hover:text-white transition-colors">Dashboard Instituição</Link></li>
-                <li><Link to="/invites" className="hover:text-white transition-colors">Gestão de Convites</Link></li>
-                <li><Link to="/courses" className="hover:text-white transition-colors">Gestão de Cursos</Link></li>
-                <li><Link to="/messages" className="hover:text-white transition-colors">Mensagens</Link></li>
-                <li><Link to="/about" className="hover:text-white transition-colors">Sobre Nós</Link></li>
-                <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link to="/support" className="hover:text-white transition-colors">Central de Ajuda</Link></li>
-                <li><Link to="/report" className="hover:text-white transition-colors">Relatórios</Link></li>
-              </ul>
+            {/* Coluna única, agora centralizada ou à direita, para TODOS os links institucionais, unificando o conteúdo antes duplicado */}
+            <div className="md:col-span-2 flex flex-wrap gap-8 justify-center md:justify-end">
+              <div>
+                <h4 className="font-semibold mb-4">Níveis de Ensino</h4>
+                <ul className="space-y-2 text-gray-400">
+                  <li><Link to="/search?level=university" className="hover:text-white transition-colors">Universidades</Link></li>
+                  <li><Link to="/search?level=high-school" className="hover:text-white transition-colors">Ensino Médio</Link></li>
+                  <li><Link to="/search?level=secondary" className="hover:text-white transition-colors">Ensino Secundário</Link></li>
+                  <li><Link to="/search?level=primary" className="hover:text-white transition-colors">Ensino Primário</Link></li>
+                  <li><Link to="/feed" className="hover:text-white transition-colors">Feed Educacional</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Plataforma</h4>
+                <ul className="space-y-2 text-gray-400">
+                  <li><Link to="/search" className="hover:text-white transition-colors">Buscar Instituições</Link></li>
+                  <li><Link to="/pricing" className="hover:text-white transition-colors">Preços</Link></li>
+                  <li><Link to="/register" className="hover:text-white transition-colors">Registar Instituição</Link></li>
+                  <li><Link to="/application/example" className="hover:text-white transition-colors">Candidaturas</Link></li>
+                  <li><Link to="/admin" className="hover:text-white transition-colors">Administração</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Gestão & Recursos</h4>
+                <ul className="space-y-2 text-gray-400">
+                  <li><Link to="/dashboard/student" className="hover:text-white transition-colors">Dashboard Estudante</Link></li>
+                  <li><Link to="/dashboard/institution" className="hover:text-white transition-colors">Dashboard Instituição</Link></li>
+                  <li><Link to="/invites" className="hover:text-white transition-colors">Gestão de Convites</Link></li>
+                  <li><Link to="/courses" className="hover:text-white transition-colors">Gestão de Cursos</Link></li>
+                  <li><Link to="/messages" className="hover:text-white transition-colors">Mensagens</Link></li>
+                  <li><Link to="/about" className="hover:text-white transition-colors">Sobre Nós</Link></li>
+                  <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                  <li><Link to="/support" className="hover:text-white transition-colors">Central de Ajuda</Link></li>
+                  <li><Link to="/report" className="hover:text-white transition-colors">Relatórios</Link></li>
+                </ul>
+              </div>
             </div>
           </div>
           
@@ -358,3 +361,4 @@ const Layout = ({ children }: LayoutProps) => {
 };
 
 export default Layout;
+
