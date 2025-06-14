@@ -278,8 +278,8 @@ const Layout = ({ children }: LayoutProps) => {
                 de uma plataforma digital moderna e transparente. Desde o ensino primário até ao universitário.
               </p>
               
-              {/* Social Media Footer */}
-              <div className="flex items-center space-x-4">
+              {/* Social Media Footer - REMOVIDO */}
+              {/* <div className="flex items-center space-x-4">
                 <span className="text-gray-400 text-sm">Siga-nos:</span>
                 <a 
                   href="https://facebook.com/share/1Ejkc6Rcgv/?mibextid=wwXlfr" 
@@ -301,7 +301,7 @@ const Layout = ({ children }: LayoutProps) => {
                   <Instagram className="h-4 w-4" />
                   <span className="text-sm">@ango_education</span>
                 </a>
-              </div>
+              </div> */}
             </div>
             
             {/* Coluna única, agora centralizada ou à direita, para TODOS os links institucionais, unificando o conteúdo antes duplicado */}
