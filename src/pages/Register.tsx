@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Layout from '@/components/Layout';
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/hooks/use-toast";
 
 const Register = () => {
   const { signup } = useAuth();
