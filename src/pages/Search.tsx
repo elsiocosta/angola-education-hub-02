@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search as SearchIcon, Filter, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,10 @@ const Search = () => {
   const [selectedLevel, setSelectedLevel] = useState('');
 
   const provinces = [
-    'Luanda', 'Benguela', 'Huíla', 'Uíge', 'Cabinda', 'Quando Cubango',
-    'Cuanza Norte', 'Cuanza Sul', 'Malanje', 'Lunda Norte', 'Lunda Sul',
-    'Moxico', 'Cunene', 'Namibe', 'Huambo', 'Bié', 'Zaire', 'Bengo'
+    'Bengo', 'Benguela', 'Bié', 'Cabinda', 'Cuando Cubango', 
+    'Cuanza Norte', 'Cuanza Sul', 'Cunene', 'Huambo', 'Huíla', 
+    'Icolo e Bengo', 'Luanda', 'Lunda Norte', 'Lunda Sul', 
+    'Malanje', 'Moxico', 'Moxico Leste', 'Namibe', 'Uíge', 'Zaire'
   ];
 
   const educationLevels = [

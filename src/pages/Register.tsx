@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building, Mail, Lock, Phone, Eye, EyeOff } from 'lucide-react';
@@ -27,9 +26,10 @@ const Register = () => {
   ];
 
   const provinces = [
-    'Luanda', 'Benguela', 'Huíla', 'Uíge', 'Cabinda', 'Quando Cubango',
-    'Cuanza Norte', 'Cuanza Sul', 'Malanje', 'Lunda Norte', 'Lunda Sul',
-    'Moxico', 'Cunene', 'Namibe', 'Huambo', 'Bié', 'Zaire', 'Bengo'
+    'Bengo', 'Benguela', 'Bié', 'Cabinda', 'Cuando Cubango', 
+    'Cuanza Norte', 'Cuanza Sul', 'Cunene', 'Huambo', 'Huíla', 
+    'Icolo e Bengo', 'Luanda', 'Lunda Norte', 'Lunda Sul', 
+    'Malanje', 'Moxico', 'Moxico Leste', 'Namibe', 'Uíge', 'Zaire'
   ];
 
   const handleSubmit = (e: React.FormEvent) => {

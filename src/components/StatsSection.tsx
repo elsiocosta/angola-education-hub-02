@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { GraduationCap, Users, MapPin, Building } from 'lucide-react';
 
@@ -18,7 +17,7 @@ const StatsSection = () => {
     },
     {
       icon: MapPin,
-      value: "18",
+      value: "21",
       label: "Províncias Cobertas",
       description: "Presença em todo o território nacional"
     },

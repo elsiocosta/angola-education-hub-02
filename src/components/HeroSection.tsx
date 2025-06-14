@@ -56,7 +56,7 @@ const HeroSection = () => {
                 <div className="text-blue-200 text-sm">Instituições</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white">18</div>
+                <div className="text-3xl font-bold text-white">21</div>
                 <div className="text-blue-200 text-sm">Províncias</div>
               </div>
               <div className="text-center">
