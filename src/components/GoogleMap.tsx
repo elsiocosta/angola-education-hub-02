@@ -1,13 +1,16 @@
-
-import React, { useEffect, useRef, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-
+// Declare the 'google' namespace for TypeScript to avoid errors when accessing Google Maps API dynamically.
 declare global {
   interface Window {
     google?: any;
   }
+  // This type avoids errors when referencing 'google.maps'
+  // Add only what is needed, you may expand as needed.
+  var google: any;
 }
+
+import React, { useEffect, useRef, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GoogleMapProps {
   height?: string;
@@ -16,8 +19,6 @@ interface GoogleMapProps {
 }
 
 const DEFAULT_CENTER = { lat: -11.2027, lng: 17.8739 }; // Centro aproximado de Angola
-
-const MAP_SCRIPT_ID = "google-maps-api-script"; // Centralize script ID
 
 const GoogleMap: React.FC<GoogleMapProps> = ({
   height = "400px",
@@ -28,17 +29,15 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Use ref to persist script owner information between renders/effect calls
-  const scriptAddedByThisInstanceRef = useRef(false);
-
   useEffect(() => {
     let map: any = null;
+    let script: HTMLScriptElement | null = null;
     let isMounted = true;
 
     async function initializeMap() {
       // Busca a chave secreta
       const { data, error } = await supabase.functions.invoke("get-google-maps-key");
-      console.log("[GoogleMap] Supabase invoke response:", { data, error });
+      console.log("[GoogleMap] Supabase invoke response:", { data, error }); // Adicionado log
 
       if (error || !data?.key) {
         toast({
@@ -54,14 +53,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       const apiKey = data.key;
       console.log("[GoogleMap] Google Maps API Key utilizada:", apiKey);
 
-      let script = document.getElementById(MAP_SCRIPT_ID) as HTMLScriptElement | null;
-      if (!window.google && !script) {
+      // Carrega o script dinamicamente
+      if (!window.google) {
         script = document.createElement("script");
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt`;
         script.async = true;
-        script.id = MAP_SCRIPT_ID;
         document.body.appendChild(script);
-        scriptAddedByThisInstanceRef.current = true;
 
         script.onload = () => {
           if (isMounted && mapRef.current && window.google) {
@@ -81,12 +78,14 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           });
           setLoading(false);
         };
-      } else if (mapRef.current && window.google) {
-        map = new window.google.maps.Map(mapRef.current, {
-          center,
-          zoom,
-          disableDefaultUI: false,
-        });
+      } else {
+        if (mapRef.current && window.google) {
+          map = new window.google.maps.Map(mapRef.current, {
+            center,
+            zoom,
+            disableDefaultUI: false,
+          });
+        }
         setLoading(false);
       }
     }
@@ -95,21 +94,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
     return () => {
       isMounted = false;
-      // Remove only if this instance added the script (avoid race conditions / double remove)
-      if (scriptAddedByThisInstanceRef.current) {
-        const script = document.getElementById(MAP_SCRIPT_ID) as HTMLScriptElement | null;
-        // Checagem reforçada para nunca tentar remover um nó que não pertence ao body
-        if (script) {
-          if (script.parentNode === document.body) {
-            document.body.removeChild(script);
-            console.log("[GoogleMap] Script do Google Maps removido com sucesso.");
-          } else {
-            console.log("[GoogleMap] Script encontrado, mas não é mais filho do body ao tentar remover.");
-          }
-        } else {
-          console.log("[GoogleMap] Nenhum script a remover ao desmontar o componente.");
-        }
-        scriptAddedByThisInstanceRef.current = false; // Reset for future mounts
+      if (script) {
+        script.remove();
       }
     };
     // eslint-disable-next-line
