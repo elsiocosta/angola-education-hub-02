@@ -103,9 +103,35 @@ const InviteManagement = () => {
   };
 
   const resendInvite = (inviteId: number) => {
+    setActiveInvites((prev) =>
+      prev.map((invite) => {
+        if (invite.id === inviteId) {
+          if (invite.status === 'Expirado') {
+            // Novo token aleatório e datas simuladas
+            const newToken = 'inv_' + Math.random().toString(36).substring(2, 12);
+            const now = new Date();
+            const expires = new Date(now.getTime() + 48 * 60 * 60 * 1000); // +48h
+            return {
+              ...invite,
+              token: newToken,
+              createdAt: now.toISOString().slice(0, 16).replace('T', ' '),
+              expiresAt: expires.toISOString().slice(0, 16).replace('T', ' '),
+              status: 'Pendente',
+              timeRemaining: '48 horas'
+            };
+          }
+          // Caso status não seja Expirado, mantém (pode colocar mais lógica se desejar)
+        }
+        return invite;
+      })
+    );
+    // Detecta se era expirado para feedback personalizado
+    const justRenewed = activeInvites.find(i => i.id === inviteId)?.status === 'Expirado';
     toast({
-      title: "Convite Reenviado",
-      description: "O convite foi reenviado com nova validade de 48 horas.",
+      title: justRenewed ? "Convite Renovado" : "Convite Reenviado",
+      description: justRenewed
+        ? "Convite expirado foi renovado e re-enviado ao usuário, nova validade de 48 horas."
+        : "O convite foi reenviado com nova validade de 48 horas.",
     });
   };
 
