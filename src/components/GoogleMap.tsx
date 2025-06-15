@@ -28,10 +28,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const scriptRef = useRef<HTMLScriptElement | null>(null);
+  const scriptAddedByThisInstance = useRef<boolean>(false);
 
   useEffect(() => {
     let map: any = null;
-    let script: HTMLScriptElement | null = null;
     let isMounted = true;
 
     async function initializeMap() {
@@ -55,9 +56,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
       // Carrega o script dinamicamente
       if (!window.google) {
-        script = document.createElement("script");
+        const script = document.createElement("script");
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt`;
         script.async = true;
+        scriptAddedByThisInstance.current = true;
+        scriptRef.current = script;
         document.body.appendChild(script);
 
         script.onload = () => {
@@ -94,8 +97,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
     return () => {
       isMounted = false;
-      if (script) {
-        script.remove();
+      // Only remove if this instance added the script
+      if (scriptAddedByThisInstance.current && scriptRef.current) {
+        // Only remove if the script is still in the document
+        if (document.body.contains(scriptRef.current)) {
+          scriptRef.current.remove();
+        }
       }
     };
     // eslint-disable-next-line
