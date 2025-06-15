@@ -1,4 +1,3 @@
-
 // Declare the 'google' namespace for TypeScript to avoid errors when accessing Google Maps API dynamically.
 declare global {
   interface Window {
@@ -38,10 +37,13 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     async function initializeMap() {
       // Busca a chave secreta
       const { data, error } = await supabase.functions.invoke("get-google-maps-key");
+      console.log("[GoogleMap] Supabase invoke response:", { data, error }); // Adicionado log
+
       if (error || !data?.key) {
         toast({
           title: "Erro ao carregar chave do Google Maps",
-          description: error?.message ?? "Verifique a configuração do segredo.",
+          description:
+            `Erro: ${error?.message ?? "Sem erro. Resposta recebida:"} ${JSON.stringify(data)}`,
           variant: "destructive",
         });
         setLoading(false);
@@ -49,6 +51,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       }
 
       const apiKey = data.key;
+      console.log("[GoogleMap] Google Maps API Key utilizada:", apiKey);
 
       // Carrega o script dinamicamente
       if (!window.google) {
@@ -69,7 +72,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         };
         script.onerror = () => {
           toast({
-            title: "Erro ao carregar Google Maps",
+            title: "Erro ao carregar Google Maps (script)",
+            description: `Falha ao carregar script da API com a chave: ${apiKey}`,
             variant: "destructive",
           });
           setLoading(false);
@@ -93,7 +97,6 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       if (script) {
         script.remove();
       }
-      // Google Maps não precisa explicitamente desmontar
     };
     // eslint-disable-next-line
   }, [center.lat, center.lng, zoom]);
@@ -113,4 +116,3 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   );
 };
 export default GoogleMap;
-
