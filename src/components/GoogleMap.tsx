@@ -20,6 +20,8 @@ interface GoogleMapProps {
 
 const DEFAULT_CENTER = { lat: -11.2027, lng: 17.8739 }; // Centro aproximado de Angola
 
+const MAP_SCRIPT_ID = "google-maps-api-script"; // Centralize script ID
+
 const GoogleMap: React.FC<GoogleMapProps> = ({
   height = "400px",
   zoom = 6,
@@ -37,7 +39,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     async function initializeMap() {
       // Busca a chave secreta
       const { data, error } = await supabase.functions.invoke("get-google-maps-key");
-      console.log("[GoogleMap] Supabase invoke response:", { data, error }); // Adicionado log
+      console.log("[GoogleMap] Supabase invoke response:", { data, error });
 
       if (error || !data?.key) {
         toast({
@@ -53,13 +55,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       const apiKey = data.key;
       console.log("[GoogleMap] Google Maps API Key utilizada:", apiKey);
 
-      // Verifica se o script já existe para evitar múltiplos scripts
-      let script = document.getElementById("google-maps-api-script") as HTMLScriptElement | null;
+      let script = document.getElementById(MAP_SCRIPT_ID) as HTMLScriptElement | null;
       if (!window.google && !script) {
         script = document.createElement("script");
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt`;
         script.async = true;
-        script.id = "google-maps-api-script";
+        script.id = MAP_SCRIPT_ID;
         document.body.appendChild(script);
         scriptAddedByThisInstance = true;
 
@@ -94,10 +95,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     initializeMap();
     return () => {
       isMounted = false;
-      // Remove o script apenas se esse componente o adicionou
+      // Limpeza segura do script
       if (scriptAddedByThisInstance) {
-        const script = document.getElementById("google-maps-api-script");
-        if (script && script.parentNode === document.body) {
+        const script = document.getElementById(MAP_SCRIPT_ID);
+        if (script && document.body.contains(script)) {
           document.body.removeChild(script);
         }
       }
