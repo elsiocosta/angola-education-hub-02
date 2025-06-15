@@ -31,7 +31,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
   useEffect(() => {
     let map: any = null;
-    let script: HTMLScriptElement | null = null;
+    let scriptAddedByThisInstance = false;
     let isMounted = true;
 
     async function initializeMap() {
@@ -53,12 +53,15 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       const apiKey = data.key;
       console.log("[GoogleMap] Google Maps API Key utilizada:", apiKey);
 
-      // Carrega o script dinamicamente
-      if (!window.google) {
+      // Verifica se o script já existe para evitar múltiplos scripts
+      let script = document.getElementById("google-maps-api-script") as HTMLScriptElement | null;
+      if (!window.google && !script) {
         script = document.createElement("script");
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt`;
         script.async = true;
+        script.id = "google-maps-api-script";
         document.body.appendChild(script);
+        scriptAddedByThisInstance = true;
 
         script.onload = () => {
           if (isMounted && mapRef.current && window.google) {
@@ -78,14 +81,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           });
           setLoading(false);
         };
-      } else {
-        if (mapRef.current && window.google) {
-          map = new window.google.maps.Map(mapRef.current, {
-            center,
-            zoom,
-            disableDefaultUI: false,
-          });
-        }
+      } else if (mapRef.current && window.google) {
+        map = new window.google.maps.Map(mapRef.current, {
+          center,
+          zoom,
+          disableDefaultUI: false,
+        });
         setLoading(false);
       }
     }
@@ -93,9 +94,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     initializeMap();
     return () => {
       isMounted = false;
-      // FIX: Only remove script if it's still in the DOM
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
+      // Remove o script apenas se esse componente o adicionou
+      if (scriptAddedByThisInstance) {
+        const script = document.getElementById("google-maps-api-script");
+        if (script && script.parentNode === document.body) {
+          document.body.removeChild(script);
+        }
       }
     };
     // eslint-disable-next-line
