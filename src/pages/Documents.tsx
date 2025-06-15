@@ -13,12 +13,32 @@ interface DocumentFile {
   uploaded_at: string;
 }
 
+const getFileExtension = (filename: string | undefined) => {
+  if (!filename) return "";
+  return filename.split(".").pop()?.toLowerCase() || "";
+};
+
+const isImage = (filename: string | undefined) => {
+  const ext = getFileExtension(filename);
+  return ["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext);
+};
+
+const isPDF = (filename: string | undefined) => getFileExtension(filename) === "pdf";
+
 const Documents = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [files, setFiles] = useState<DocumentFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const inputFileRef = useRef<HTMLInputElement>(null);
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+
+  // Filtra os arquivos exibidos conforme a ordem
+  const sortedFiles = [...files].sort((a, b) =>
+    sortOrder === "desc"
+      ? new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
+      : new Date(a.uploaded_at).getTime() - new Date(b.uploaded_at).getTime()
+  );
 
   // Fetch documents for logged user
   useEffect(() => {
@@ -27,8 +47,7 @@ const Documents = () => {
       const { data, error } = await supabase
         .from("documents")
         .select("*")
-        .eq("user_id", user.id)
-        .order("uploaded_at", { ascending: false });
+        .eq("user_id", user.id);
       if (error) {
         toast({ title: "Erro ao buscar documentos", description: error.message, variant: "destructive" });
       } else {
@@ -50,16 +69,13 @@ const Documents = () => {
       return;
     }
     setUploading(true);
-    // Save file to storage (bucket: "documents", path: "user_id/filename")
     const filePath = `${user.id}/${Date.now()}_${file.name}`;
-    // Crie bucket "documents" no painel do Supabase se ainda não existir
     const { error: uploadError } = await supabase.storage.from("documents").upload(filePath, file);
     if (uploadError) {
       toast({ title: "Erro ao fazer upload", description: uploadError.message, variant: "destructive" });
       setUploading(false);
       return;
     }
-    // Salva registro na tabela documents
     const { error: dbError, data: dbData } = await supabase
       .from("documents")
       .insert([{ file_path: filePath, user_id: user.id }])
@@ -76,13 +92,47 @@ const Documents = () => {
     setUploading(false);
   };
 
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<"img" | "pdf" | null>(null);
+  const [previewFilename, setPreviewFilename] = useState<string | null>(null);
+
+  const handlePreview = async (file_path: string) => {
+    const filename = file_path.split("/").pop();
+    if (!filename) return;
+    setPreviewFilename(filename);
+
+    const { data, error } = await supabase.storage.from("documents").download(file_path);
+    if (error || !data) {
+      toast({ title: "Erro ao carregar visualização", description: error?.message, variant: "destructive" });
+      return;
+    }
+    const url = URL.createObjectURL(data);
+    if (isImage(filename)) {
+      setPreviewType("img");
+      setPreviewUrl(url);
+    } else if (isPDF(filename)) {
+      setPreviewType("pdf");
+      setPreviewUrl(url);
+    } else {
+      setPreviewType(null);
+      setPreviewUrl(null);
+      toast({ title: "Preview não suportado para este tipo de arquivo." });
+    }
+  };
+
+  const closePreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setPreviewType(null);
+    setPreviewFilename(null);
+  };
+
   const handleDownload = async (file_path: string) => {
     const { data, error } = await supabase.storage.from("documents").download(file_path);
     if (error || !data) {
       toast({ title: "Erro ao baixar arquivo", description: error?.message, variant: "destructive" });
       return;
     }
-    // Baixa usando a API do navegador
     const url = URL.createObjectURL(data);
     const a = document.createElement("a");
     a.href = url;
@@ -103,21 +153,73 @@ const Documents = () => {
             {uploading ? "Enviando..." : "Enviar"}
           </Button>
         </form>
+        <div className="mb-4 flex items-center gap-2">
+          <span className="text-gray-600 text-sm">Ordenar por data:</span>
+          <select
+            value={sortOrder}
+            onChange={e => setSortOrder(e.target.value as "desc" | "asc")}
+            className="border rounded px-2 py-1 bg-white text-gray-800 text-sm"
+          >
+            <option value="desc">Mais recentes</option>
+            <option value="asc">Mais antigos</option>
+          </select>
+        </div>
         <div>
           <h2 className="text-lg mb-4 font-semibold text-gray-800">Seus arquivos enviados</h2>
           {files.length === 0 && (
             <div className="text-gray-500 italic">Nenhum arquivo enviado.</div>
           )}
           <ul className="space-y-3">
-            {files.map((doc) => (
-              <li key={doc.id} className="flex justify-between items-center border rounded bg-white px-4 py-2">
-                <span className="truncate">{doc.file_path.split("/").pop()}</span>
-                <Button size="sm" variant="outline" onClick={() => handleDownload(doc.file_path)}>
-                  Download
-                </Button>
-              </li>
-            ))}
+            {sortedFiles.map((doc) => {
+              const filename = doc.file_path.split("/").pop();
+              return (
+                <li key={doc.id} className="flex justify-between items-center border rounded bg-white px-4 py-2">
+                  <span className="truncate max-w-[160px]">{filename}</span>
+                  <div className="flex items-center gap-2">
+                    {(isImage(filename) || isPDF(filename)) && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handlePreview(doc.file_path)}
+                        type="button"
+                        className="min-w-[36px]"
+                      >
+                        Visualizar
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => handleDownload(doc.file_path)}>
+                      Download
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
+          {/* Modal de visualização */}
+          {previewUrl && previewType && (
+            <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+              <div className="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full relative">
+                <button
+                  className="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-lg"
+                  onClick={closePreview}
+                  title="Fechar"
+                >
+                  ×
+                </button>
+                <div className="mb-3 font-semibold text-sm text-gray-700 truncate">{previewFilename}</div>
+                {previewType === "img" && (
+                  <img src={previewUrl} alt={previewFilename || "Preview"} className="max-h-[70vh] max-w-full mx-auto rounded" />
+                )}
+                {previewType === "pdf" && (
+                  <iframe
+                    src={previewUrl}
+                    title={previewFilename || "Preview PDF"}
+                    className="w-full min-h-[65vh] rounded border"
+                  />
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Layout>
