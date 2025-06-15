@@ -1,5 +1,7 @@
-
 project_id = "ebbrpjoahugmkvuoafvx"
 
 [functions.send-invite-email]
+verify_jwt = false
+
+[functions.get-google-maps-key]
 verify_jwt = false
