@@ -91,11 +91,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     }
 
     initializeMap();
-
     return () => {
       isMounted = false;
-      if (script) {
-        script.remove();
+      // FIX: Only remove script if it's still in the DOM
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
       }
     };
     // eslint-disable-next-line
