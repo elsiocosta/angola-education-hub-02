@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,12 +95,19 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
     return () => {
       isMounted = false;
-
       // Remove only if this instance added the script (avoid race conditions / double remove)
       if (scriptAddedByThisInstanceRef.current) {
         const script = document.getElementById(MAP_SCRIPT_ID) as HTMLScriptElement | null;
-        if (script && script.parentNode === document.body) {
-          document.body.removeChild(script);
+        // Checagem reforçada para nunca tentar remover um nó que não pertence ao body
+        if (script) {
+          if (script.parentNode === document.body) {
+            document.body.removeChild(script);
+            console.log("[GoogleMap] Script do Google Maps removido com sucesso.");
+          } else {
+            console.log("[GoogleMap] Script encontrado, mas não é mais filho do body ao tentar remover.");
+          }
+        } else {
+          console.log("[GoogleMap] Nenhum script a remover ao desmontar o componente.");
         }
         scriptAddedByThisInstanceRef.current = false; // Reset for future mounts
       }
