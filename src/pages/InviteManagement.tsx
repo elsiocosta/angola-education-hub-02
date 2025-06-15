@@ -136,6 +136,7 @@ const InviteManagement = () => {
   };
 
   const cancelInvite = (inviteId: number) => {
+    setActiveInvites(prev => prev.filter(invite => invite.id !== inviteId));
     toast({
       title: "Convite Cancelado",
       description: "O convite foi cancelado com sucesso.",
