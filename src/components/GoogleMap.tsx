@@ -1,12 +1,3 @@
-// Declare the 'google' namespace for TypeScript to avoid errors when accessing Google Maps API dynamically.
-declare global {
-  interface Window {
-    google?: any;
-  }
-  // This type avoids errors when referencing 'google.maps'
-  // Add only what is needed, you may expand as needed.
-  var google: any;
-}
 
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -31,9 +22,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Use ref to persist script owner information between renders/effect calls
+  const scriptAddedByThisInstanceRef = useRef(false);
+
   useEffect(() => {
     let map: any = null;
-    let scriptAddedByThisInstance = false;
     let isMounted = true;
 
     async function initializeMap() {
@@ -62,7 +55,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         script.async = true;
         script.id = MAP_SCRIPT_ID;
         document.body.appendChild(script);
-        scriptAddedByThisInstance = true;
+        scriptAddedByThisInstanceRef.current = true;
 
         script.onload = () => {
           if (isMounted && mapRef.current && window.google) {
@@ -93,14 +86,17 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     }
 
     initializeMap();
+
     return () => {
       isMounted = false;
-      // Limpeza segura do script
-      if (scriptAddedByThisInstance) {
-        const script = document.getElementById(MAP_SCRIPT_ID);
-        if (script && document.body.contains(script)) {
+
+      // Remove only if this instance added the script (avoid race conditions / double remove)
+      if (scriptAddedByThisInstanceRef.current) {
+        const script = document.getElementById(MAP_SCRIPT_ID) as HTMLScriptElement | null;
+        if (script && script.parentNode === document.body) {
           document.body.removeChild(script);
         }
+        scriptAddedByThisInstanceRef.current = false; // Reset for future mounts
       }
     };
     // eslint-disable-next-line
