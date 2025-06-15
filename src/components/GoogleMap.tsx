@@ -1,4 +1,14 @@
 
+// Declare the 'google' namespace for TypeScript to avoid errors when accessing Google Maps API dynamically.
+declare global {
+  interface Window {
+    google?: any;
+  }
+  // This type avoids errors when referencing 'google.maps'
+  // Add only what is needed, you may expand as needed.
+  var google: any;
+}
+
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +31,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    let map: google.maps.Map | null = null;
+    let map: any = null;
     let script: HTMLScriptElement | null = null;
     let isMounted = true;
 
@@ -65,7 +75,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           setLoading(false);
         };
       } else {
-        if (mapRef.current) {
+        if (mapRef.current && window.google) {
           map = new window.google.maps.Map(mapRef.current, {
             center,
             zoom,
@@ -92,7 +102,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     <div
       ref={mapRef}
       className="w-full rounded-lg border border-gray-200 shadow"
-      style={{ height, minHeight: "300px", background: "#e5f4ff" }}
+      style={{ height, minHeight: "300px", background: "#e5f4ff", position: "relative" }}
     >
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/70">
@@ -103,3 +113,4 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   );
 };
 export default GoogleMap;
+
