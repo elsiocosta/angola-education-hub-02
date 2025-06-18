@@ -1,17 +1,28 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { User, Building, Users, AlertCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { User, Building, Users, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Layout from '@/components/Layout';
 
 const RegisterOptions = () => {
+  const navigate = useNavigate();
+
   return (
     <Layout>
       <div className="min-h-[80vh] flex items-center justify-center py-12">
         <div className="w-full max-w-4xl">
           <div className="text-center mb-8">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/')}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar ao Início
+            </Button>
+            
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Criar Conta</h1>
             <p className="text-gray-600">Escolha o tipo de conta que melhor se adequa ao seu perfil</p>
           </div>
@@ -33,9 +44,12 @@ const RegisterOptions = () => {
                   <li>• Curtir e partilhar publicações</li>
                   <li>• Candidatar-se a cursos</li>
                 </ul>
-                <Link to="/register/visitor">
-                  <Button className="w-full">Criar Conta de Visitante</Button>
-                </Link>
+                <Button 
+                  className="w-full"
+                  onClick={() => navigate('/register/visitor')}
+                >
+                  Criar Conta de Visitante
+                </Button>
               </CardContent>
             </Card>
 
@@ -55,11 +69,12 @@ const RegisterOptions = () => {
                   <li>• Publicar conteúdos</li>
                   <li>• Receber candidaturas</li>
                 </ul>
-                <Link to="/register/institution">
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
-                    Registrar Instituição
-                  </Button>
-                </Link>
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  onClick={() => navigate('/register/institution')}
+                >
+                  Registrar Instituição
+                </Button>
               </CardContent>
             </Card>
 
@@ -89,13 +104,32 @@ const RegisterOptions = () => {
             </Card>
           </div>
 
-          <div className="text-center mt-8">
+          <div className="text-center mt-8 space-y-4">
             <p className="text-gray-600">
               Já tem uma conta?{' '}
-              <Link to="/login" className="text-blue-600 hover:underline">
+              <Button 
+                variant="link" 
+                onClick={() => navigate('/login')}
+                className="p-0 text-blue-600 hover:underline"
+              >
                 Entrar
-              </Link>
+              </Button>
             </p>
+            
+            <div className="flex justify-center gap-4">
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/search')}
+              >
+                Explorar Instituições
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/about')}
+              >
+                Saber Mais
+              </Button>
+            </div>
           </div>
         </div>
       </div>

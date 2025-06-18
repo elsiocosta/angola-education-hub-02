@@ -1,24 +1,65 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/Layout';
 
 const VisitorRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
+  
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Visitor registration:', formData);
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Erro de validação",
+        description: "As senhas não coincidem",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      console.log('Visitor registration:', formData);
+      
+      // Simular processo de registro
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Você será redirecionado para fazer login",
+      });
+      
+      // Redirecionar para login após 2 segundos
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao criar conta",
+        description: "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -138,9 +179,33 @@ const VisitorRegister = () => {
               </CardContent>
 
               <CardFooter className="flex flex-col space-y-4">
-                <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600">
-                  Criar Conta
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-green-600"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Criando conta..." : "Criar Conta"}
                 </Button>
+                
+                <div className="flex flex-col space-y-2 w-full">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => navigate('/login')}
+                  >
+                    Já tenho conta - Entrar
+                  </Button>
+                  
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="w-full"
+                    onClick={() => navigate('/')}
+                  >
+                    Voltar ao Início
+                  </Button>
+                </div>
                 
                 <p className="text-sm text-center text-gray-600">
                   Já tem uma conta?{' '}
