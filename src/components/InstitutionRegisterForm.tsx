@@ -1,18 +1,19 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Building, Mail, Lock, Phone, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
 const InstitutionRegisterForm = () => {
-  const { signup } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,18 +39,76 @@ const InstitutionRegisterForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!formData.password || formData.password.length < 6) {
-      toast({ title: "Senha curta", description: "Mínimo 6 caracteres", variant: "destructive" });
+      toast({ 
+        title: "Senha curta", 
+        description: "Mínimo 6 caracteres", 
+        variant: "destructive" 
+      });
       return;
     }
-    // Outras validações podem ser incrementadas aqui
-    const ok = await signup({
-      email: formData.email,
-      password: formData.password,
-      name: formData.name
-    });
-    if (ok) {
-      // resetar formulário ou redirecionar, se desejar
+
+    setIsLoading(true);
+
+    try {
+      // Gerar código de verificação
+      const verificationCode = Math.random().toString().substr(2, 6);
+
+      // Salvar dados temporários no banco
+      const { error: insertError } = await supabase
+        .from('verification_codes')
+        .insert({
+          email: formData.email,
+          code: verificationCode,
+          user_type: 'institution',
+          user_data: {
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            phone: formData.phone,
+            type: formData.type,
+            province: formData.province
+          },
+          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
+        });
+
+      if (insertError) throw insertError;
+
+      // Enviar email de verificação
+      const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
+        body: {
+          email: formData.email,
+          code: verificationCode,
+          userType: 'institution'
+        }
+      });
+
+      if (emailError) throw emailError;
+
+      toast({
+        title: "Código enviado!",
+        description: "Verifique seu email para continuar",
+      });
+
+      // Redirecionar para página de verificação
+      navigate('/verify-email', {
+        state: {
+          email: formData.email,
+          userType: 'institution',
+          userData: formData
+        }
+      });
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Erro ao registrar",
+        description: "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -189,8 +248,12 @@ const InstitutionRegisterForm = () => {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600">
-            Criar Conta
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-blue-600 to-green-600"
+            disabled={isLoading}
+          >
+            {isLoading ? "Enviando código..." : "Criar Conta"}
           </Button>
           <p className="text-sm text-center text-gray-600">
             Já tem uma conta?{' '}

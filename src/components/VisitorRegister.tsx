@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 
 const VisitorRegister = () => {
@@ -33,25 +34,69 @@ const VisitorRegister = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter pelo menos 6 caracteres",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      console.log('Visitor registration:', formData);
-      
-      // Simular processo de registro
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Gerar código de verificação
+      const verificationCode = Math.random().toString().substr(2, 6);
+
+      // Salvar dados temporários no banco
+      const { error: insertError } = await supabase
+        .from('verification_codes')
+        .insert({
+          email: formData.email,
+          code: verificationCode,
+          user_type: 'visitor',
+          user_data: {
+            name: formData.name,
+            email: formData.email,
+            password: formData.password
+          },
+          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
+        });
+
+      if (insertError) throw insertError;
+
+      // Enviar email de verificação
+      const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
+        body: {
+          email: formData.email,
+          code: verificationCode,
+          userType: 'visitor'
+        }
+      });
+
+      if (emailError) throw emailError;
+
       toast({
-        title: "Conta criada com sucesso!",
-        description: "Você será redirecionado para fazer login",
+        title: "Código enviado!",
+        description: "Verifique seu email para continuar",
+      });
+
+      // Redirecionar para página de verificação
+      navigate('/verify-email', {
+        state: {
+          email: formData.email,
+          userType: 'visitor',
+          userData: {
+            name: formData.name,
+            email: formData.email,
+            password: formData.password
+          }
+        }
       });
       
-      // Redirecionar para login após 2 segundos
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-      
     } catch (error) {
+      console.error('Registration error:', error);
       toast({
         title: "Erro ao criar conta",
         description: "Tente novamente mais tarde",
@@ -184,7 +229,7 @@ const VisitorRegister = () => {
                   className="w-full bg-gradient-to-r from-blue-600 to-green-600"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Criando conta..." : "Criar Conta"}
+                  {isLoading ? "Enviando código..." : "Criar Conta"}
                 </Button>
                 
                 <div className="flex flex-col space-y-2 w-full">

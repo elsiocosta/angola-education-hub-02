@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RegisterOptions from "./components/RegisterOptions";
 import VisitorRegister from "./components/VisitorRegister";
+import EmailVerification from "./components/EmailVerification";
 import Dashboard from "./pages/Dashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import InstitutionDashboard from "./pages/InstitutionDashboard";
@@ -46,6 +48,7 @@ const App = () => (
             <Route path="/register" element={<RegisterOptions />} />
             <Route path="/register/visitor" element={<VisitorRegister />} />
             <Route path="/register/institution" element={<Register />} />
+            <Route path="/verify-email" element={<EmailVerification />} />
             <Route path="/login" element={<Login />} />
             
             {/* Dashboard Routes */}
