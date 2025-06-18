@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,6 +40,22 @@ const Pricing = () => {
       featured: false
     },
     {
+      name: "Ensino Médio",
+      price: "18.000",
+      description: "Para escolas de ensino médio",
+      features: [
+        "Tudo do plano anterior",
+        "Sistema de notas online",
+        "Portal do estudante",
+        "Até 4 administradores",
+        "Gestão de disciplinas",
+        "Calendário de provas",
+        "Comunicação com pais"
+      ],
+      buttonText: "Escolher Plano",
+      featured: false
+    },
+    {
       name: "Ensino Médio Técnico",
       price: "20.000",
       description: "Para institutos técnicos profissionais",
@@ -54,7 +69,7 @@ const Pricing = () => {
         "Suporte prioritário"
       ],
       buttonText: "Escolher Plano",
-      featured: false
+      featured: true
     },
     {
       name: "Ensino Superior",
@@ -71,7 +86,7 @@ const Pricing = () => {
         "Relatórios personalizados"
       ],
       buttonText: "Plano Premium",
-      featured: true
+      featured: false
     }
   ];
 
@@ -118,7 +133,7 @@ const Pricing = () => {
           </div>
 
           {/* Main Plans */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-16">
             {plans.map((plan, index) => (
               <Card key={index} className={`relative ${plan.featured ? 'border-blue-500 shadow-lg scale-105' : 'border-gray-200'}`}>
                 {plan.featured && (

@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { GraduationCap, Users, MapPin, Building } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const StatsSection = () => {
   const stats = [
@@ -75,12 +77,16 @@ const StatsSection = () => {
               a milhares de estudantes em todo o país.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold transition-colors">
-                Registar Minha Instituição
-              </button>
-              <button className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold transition-colors">
-                Saber Mais
-              </button>
+              <Link to="/register">
+                <button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold transition-colors">
+                  Registar Minha Instituição
+                </button>
+              </Link>
+              <Link to="/about">
+                <button className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold transition-colors">
+                  Saber Mais
+                </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -26,7 +26,8 @@ const Index = () => {
 
   const educationLevels = [
     'Ensino Primário',
-    'Ensino Secundário', 
+    'Ensino Secundário',
+    'Ensino Médio',
     'Ensino Médio Técnico',
     'Ensino Superior'
   ];

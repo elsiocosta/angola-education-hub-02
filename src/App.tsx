@@ -16,6 +16,8 @@ import EmailVerification from "./components/EmailVerification";
 import Dashboard from "./pages/Dashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import InstitutionDashboard from "./pages/InstitutionDashboard";
+import VisitorDashboard from "./pages/VisitorDashboard";
+import StudentSocialDashboard from "./pages/StudentSocialDashboard";
 import InviteManagement from "./pages/InviteManagement";
 import CourseManagement from "./pages/CourseManagement";
 import InternalMessages from "./pages/InternalMessages";
@@ -55,6 +57,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/student" element={<StudentDashboard />} />
             <Route path="/dashboard/institution" element={<InstitutionDashboard />} />
+            <Route path="/dashboard/visitor" element={<VisitorDashboard />} />
+            <Route path="/dashboard/student-social" element={<StudentSocialDashboard />} />
             
             {/* Institution Management Routes */}
             <Route path="/invites" element={<InviteManagement />} />
