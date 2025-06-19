@@ -24,7 +24,7 @@ interface InviteListProps {
 }
 
 const statuses = [
-  { value: "", label: "Todos" },
+  { value: "all", label: "Todos" },
   { value: "Pendente", label: "Pendente" },
   { value: "Aceito", label: "Aceito" },
   { value: "Expirado", label: "Expirado" }
@@ -32,12 +32,12 @@ const statuses = [
 
 const InviteList: React.FC<InviteListProps> = ({ invites, onCopy, onResend, onCancel }) => {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("all");
 
   // Filtro aplicado em memória para esta versão local
   const filteredInvites = useMemo(() => {
     return invites.filter(invite => {
-      const matchStatus = status ? invite.status === status : true;
+      const matchStatus = status === "all" ? true : invite.status === status;
       const searchLower = search.toLowerCase();
       const matchSearch =
         invite.name.toLowerCase().includes(searchLower) ||
