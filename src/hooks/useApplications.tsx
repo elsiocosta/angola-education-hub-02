@@ -53,7 +53,28 @@ export const useApplications = (filters?: { studentId?: string; institutionId?: 
       const { data, error } = await query.order('submitted_at', { ascending: false });
       
       if (error) throw error;
-      return data as Application[];
+      
+      // Transform the data to match our interface
+      const transformedData = data?.map(item => ({
+        ...item,
+        personal_data: item.personal_data as {
+          firstName: string;
+          lastName: string;
+          email: string;
+          phone: string;
+          birthDate: string;
+        },
+        documents: Array.isArray(item.documents) ? item.documents : [],
+        course: item.courses ? {
+          name: item.courses.name,
+          level: item.courses.level
+        } : undefined,
+        institution: item.institutions ? {
+          name: item.institutions.name
+        } : undefined
+      })) || [];
+      
+      return transformedData as Application[];
     }
   });
 };

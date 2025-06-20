@@ -28,16 +28,21 @@ export const useMessages = (userId?: string) => {
       
       const { data, error } = await supabase
         .from('internal_messages')
-        .select(`
-          *,
-          sender:profiles!sender_id(name),
-          recipient:profiles!recipient_id(name)
-        `)
+        .select('*')
         .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Message[];
+      
+      // For now, we'll return the data without user names
+      // until we implement a proper profiles system
+      const transformedData = data?.map(message => ({
+        ...message,
+        sender: { name: 'Usuário' },
+        recipient: { name: 'Usuário' }
+      })) || [];
+      
+      return transformedData as Message[];
     },
     enabled: !!userId
   });
