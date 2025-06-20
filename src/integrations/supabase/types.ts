@@ -9,6 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      applications: {
+        Row: {
+          course_id: string | null
+          documents: Json | null
+          id: string
+          institution_id: string | null
+          notes: string | null
+          personal_data: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          student_id: string | null
+          submitted_at: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          documents?: Json | null
+          id?: string
+          institution_id?: string | null
+          notes?: string | null
+          personal_data: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          student_id?: string | null
+          submitted_at?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          documents?: Json | null
+          id?: string
+          institution_id?: string | null
+          notes?: string | null
+          personal_data?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          student_id?: string | null
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration_years: number | null
+          id: string
+          institution_id: string | null
+          level: string
+          name: string
+          requirements: string | null
+          tuition: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration_years?: number | null
+          id?: string
+          institution_id?: string | null
+          level: string
+          name: string
+          requirements?: string | null
+          tuition?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration_years?: number | null
+          id?: string
+          institution_id?: string | null
+          level?: string
+          name?: string
+          requirements?: string | null
+          tuition?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           file_path: string
@@ -29,6 +133,154 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      followers: {
+        Row: {
+          created_at: string | null
+          follower_id: string | null
+          id: string
+          institution_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id?: string | null
+          id?: string
+          institution_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string | null
+          id?: string
+          institution_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followers_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      institutions: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          email: string | null
+          id: string
+          institution_type: string
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          municipality: string | null
+          name: string
+          phone: string | null
+          province: string
+          status: string | null
+          subscription_plan: string | null
+          tuition_high_school: number | null
+          tuition_primary: number | null
+          tuition_secondary: number | null
+          tuition_university: number | null
+          updated_at: string | null
+          video_url: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          institution_type: string
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          municipality?: string | null
+          name: string
+          phone?: string | null
+          province: string
+          status?: string | null
+          subscription_plan?: string | null
+          tuition_high_school?: number | null
+          tuition_primary?: number | null
+          tuition_secondary?: number | null
+          tuition_university?: number | null
+          updated_at?: string | null
+          video_url?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          institution_type?: string
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          municipality?: string | null
+          name?: string
+          phone?: string | null
+          province?: string
+          status?: string | null
+          subscription_plan?: string | null
+          tuition_high_school?: number | null
+          tuition_primary?: number | null
+          tuition_secondary?: number | null
+          tuition_university?: number | null
+          updated_at?: string | null
+          video_url?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      internal_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          institution_id: string | null
+          read_at: string | null
+          recipient_id: string | null
+          sender_id: string | null
+          subject: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          institution_id?: string | null
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          subject: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          institution_id?: string | null
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_messages_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invites: {
         Row: {
@@ -62,6 +314,120 @@ export type Database = {
           used?: boolean | null
         }
         Relationships: []
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          post_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          author_id: string | null
+          comments_count: number | null
+          content: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          institution_id: string | null
+          likes_count: number | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          comments_count?: number | null
+          content: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          institution_id?: string | null
+          likes_count?: number | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          comments_count?: number | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          institution_id?: string | null
+          likes_count?: number | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
