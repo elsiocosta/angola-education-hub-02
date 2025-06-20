@@ -1,397 +1,327 @@
 
 import React, { useState } from 'react';
-import Layout from '@/components/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Edit, Trash2, BookOpen, Users, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  GraduationCap, 
-  Plus, 
-  Edit, 
-  Users, 
-  Clock, 
-  DollarSign,
-  BookOpen,
-  Calendar,
-  User,
-  Building
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import Layout from '@/components/Layout';
+import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
+import { useInstitutions } from '@/hooks/useInstitutions';
+import { useAuth } from '@/hooks/useAuth';
 
 const CourseManagement = () => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('courses');
-  const [newCourse, setNewCourse] = useState({
+  const { user } = useAuth();
+  const { data: institutions = [] } = useInstitutions();
+  const [selectedInstitution, setSelectedInstitution] = useState<string>('');
+  
+  // Filter institutions created by current user
+  const userInstitutions = institutions.filter(inst => inst.created_by === user?.id);
+  const institutionId = selectedInstitution || userInstitutions[0]?.id;
+  
+  const { data: courses = [], isLoading } = useCourses(institutionId);
+  const createCourse = useCreateCourse();
+  const updateCourse = useUpdateCourse();
+  const deleteCourse = useDeleteCourse();
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [formData, setFormData] = useState({
     name: '',
-    coordinator: '',
-    duration: '',
-    fee: '',
     description: '',
-    requirements: '',
-    schedule: ''
+    level: 'university' as Course['level'],
+    duration_years: '',
+    tuition: '',
+    requirements: ''
   });
 
-  const courses = [
-    {
-      id: 1,
-      name: 'Engenharia Informática',
-      coordinator: 'Prof. Carlos Mendes',
-      coordinatorEmail: 'carlos.mendes@uan.ao',
-      students: 245,
-      duration: '5 anos',
-      fee: '45.000 KZ',
-      status: 'Ativo',
-      turmas: 8,
-      description: 'Curso focado no desenvolvimento de software e sistemas computacionais.',
-      requirements: 'Ensino Médio completo, Matemática e Física',
-      schedule: 'Manhã e Tarde'
-    },
-    {
-      id: 2,
-      name: 'Medicina',
-      coordinator: 'Dr. Isabel Rodrigues',
-      coordinatorEmail: 'isabel.rodrigues@uan.ao',
-      students: 189,
-      duration: '6 anos',
-      fee: '65.000 KZ',
-      status: 'Ativo',
-      turmas: 6,
-      description: 'Formação médica completa com estágios práticos.',
-      requirements: 'Ensino Médio completo, Biologia, Química e Física',
-      schedule: 'Manhã e Tarde'
-    },
-    {
-      id: 3,
-      name: 'Administração de Empresas',
-      coordinator: 'Prof. António Silva',
-      coordinatorEmail: 'antonio.silva@uan.ao',
-      students: 312,
-      duration: '4 anos',
-      fee: '35.000 KZ',
-      status: 'Ativo',
-      turmas: 10,
-      description: 'Gestão empresarial e administração de recursos.',
-      requirements: 'Ensino Médio completo, Matemática',
-      schedule: 'Noite'
-    }
-  ];
-
-  const turmas = [
-    {
-      id: 1,
-      name: 'EI-1A',
-      course: 'Engenharia Informática',
-      year: '1º Ano',
-      students: 35,
-      professor: 'Prof. Maria Santos',
-      schedule: 'Segunda a Sexta, 08:00-12:00',
-      classroom: 'Lab A-201'
-    },
-    {
-      id: 2,
-      name: 'EI-1B',
-      course: 'Engenharia Informática',
-      year: '1º Ano',
-      students: 32,
-      professor: 'Prof. João Costa',
-      schedule: 'Segunda a Sexta, 14:00-18:00',
-      classroom: 'Lab A-202'
-    },
-    {
-      id: 3,
-      name: 'MED-3A',
-      course: 'Medicina',
-      year: '3º Ano',
-      students: 28,
-      professor: 'Dr. Paulo Mendes',
-      schedule: 'Segunda a Sexta, 08:00-17:00',
-      classroom: 'Anfiteatro B-101'
-    }
-  ];
-
-  const handleCreateCourse = () => {
-    if (!newCourse.name || !newCourse.coordinator || !newCourse.duration || !newCourse.fee) {
-      toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Curso Criado",
-      description: `Curso "${newCourse.name}" criado com sucesso.`,
-    });
-
-    // Reset form
-    setNewCourse({
+  const resetForm = () => {
+    setFormData({
       name: '',
-      coordinator: '',
-      duration: '',
-      fee: '',
       description: '',
-      requirements: '',
-      schedule: ''
+      level: 'university',
+      duration_years: '',
+      tuition: '',
+      requirements: ''
     });
+    setEditingCourse(null);
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!institutionId) return;
+
+    const courseData = {
+      ...formData,
+      institution_id: institutionId,
+      duration_years: formData.duration_years ? parseInt(formData.duration_years) : undefined,
+      tuition: formData.tuition ? parseFloat(formData.tuition) : undefined
+    };
+
+    try {
+      if (editingCourse) {
+        await updateCourse.mutateAsync({ id: editingCourse.id, ...courseData });
+      } else {
+        await createCourse.mutateAsync(courseData);
+      }
+      resetForm();
+      setIsCreateOpen(false);
+    } catch (error) {
+      console.error('Error saving course:', error);
+    }
+  };
+
+  const handleEdit = (course: Course) => {
+    setFormData({
+      name: course.name,
+      description: course.description || '',
+      level: course.level,
+      duration_years: course.duration_years?.toString() || '',
+      tuition: course.tuition?.toString() || '',
+      requirements: course.requirements || ''
+    });
+    setEditingCourse(course);
+    setIsCreateOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Tem certeza que deseja remover este curso?')) {
+      await deleteCourse.mutateAsync(id);
+    }
+  };
+
+  const getLevelName = (level: string) => {
+    const levels = {
+      primary: 'Ensino Primário',
+      secondary: 'Ensino Secundário',
+      high_school: 'Ensino Médio',
+      university: 'Universitário',
+      technical: 'Técnico'
+    };
+    return levels[level as keyof typeof levels] || level;
+  };
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <p>Por favor, faça login para acessar esta página.</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div className="py-8">
-        <div className="container mx-auto px-4">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Gestão de Cursos</h1>
-            <p className="text-gray-600">Gerir cursos, turmas e coordenadores da instituição</p>
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Gestão de Cursos</h1>
+          
+          {userInstitutions.length > 1 && (
+            <div className="mb-6">
+              <Label htmlFor="institution">Seleccionar Instituição</Label>
+              <Select value={selectedInstitution} onValueChange={setSelectedInstitution}>
+                <SelectTrigger className="w-full max-w-md">
+                  <SelectValue placeholder="Seleccionar instituição" />
+                </SelectTrigger>
+                <SelectContent>
+                  {userInstitutions.map((institution) => (
+                    <SelectItem key={institution.id} value={institution.id}>
+                      {institution.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="courses">Cursos</TabsTrigger>
-              <TabsTrigger value="turmas">Turmas</TabsTrigger>
-              <TabsTrigger value="create">Criar Curso</TabsTrigger>
-            </TabsList>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm} disabled={!institutionId}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Curso
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCourse ? 'Editar Curso' : 'Criar Novo Curso'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Nome do Curso *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="level">Nível *</Label>
+                    <Select value={formData.level} onValueChange={(value: Course['level']) => setFormData({ ...formData, level: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="primary">Ensino Primário</SelectItem>
+                        <SelectItem value="secondary">Ensino Secundário</SelectItem>
+                        <SelectItem value="high_school">Ensino Médio</SelectItem>
+                        <SelectItem value="university">Universitário</SelectItem>
+                        <SelectItem value="technical">Técnico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            <TabsContent value="courses" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {courses.map((course) => (
-                  <Card key={course.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">{course.name}</CardTitle>
-                          <CardDescription className="flex items-center mt-2">
-                            <User className="h-4 w-4 mr-1" />
-                            {course.coordinator}
-                          </CardDescription>
-                        </div>
-                        <Badge variant={course.status === 'Ativo' ? 'default' : 'secondary'}>
-                          {course.status}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="flex items-center">
-                            <Users className="h-4 w-4 mr-2 text-blue-600" />
-                            <span>{course.students} alunos</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Building className="h-4 w-4 mr-2 text-green-600" />
-                            <span>{course.turmas} turmas</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-2 text-purple-600" />
-                            <span>{course.duration}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <DollarSign className="h-4 w-4 mr-2 text-orange-600" />
-                            <span>{course.fee}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="pt-3 border-t">
-                          <p className="text-xs text-gray-600 mb-2">Descrição:</p>
-                          <p className="text-sm">{course.description}</p>
-                        </div>
-                        
-                        <div>
-                          <p className="text-xs text-gray-600 mb-1">Horário:</p>
-                          <p className="text-sm">{course.schedule}</p>
-                        </div>
-                        
-                        <div className="flex space-x-2 mt-4">
-                          <Button variant="outline" size="sm" className="flex-1">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                          </Button>
-                          <Button variant="outline" size="sm" className="flex-1">
-                            <Users className="h-4 w-4 mr-1" />
-                            Turmas
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
+                <div>
+                  <Label htmlFor="description">Descrição</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
 
-            <TabsContent value="turmas" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>Turmas Ativas</CardTitle>
-                      <CardDescription>Gerir turmas por curso e ano</CardDescription>
-                    </div>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nova Turma
-                    </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="duration">Duração (anos)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={formData.duration_years}
+                      onChange={(e) => setFormData({ ...formData, duration_years: e.target.value })}
+                    />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {turmas.map((turma) => (
-                      <div key={turma.id} className="border rounded-lg p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-lg font-semibold">{turma.name}</h3>
-                            <p className="text-gray-600">{turma.course} - {turma.year}</p>
-                            <p className="text-sm text-gray-500">Prof: {turma.professor}</p>
-                          </div>
-                          <div className="text-right">
-                            <Badge variant="outline">
-                              {turma.students} alunos
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium flex items-center">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              Horário:
-                            </span>
-                            <p>{turma.schedule}</p>
-                          </div>
-                          <div>
-                            <span className="font-medium flex items-center">
-                              <Building className="h-4 w-4 mr-1" />
-                              Sala:
-                            </span>
-                            <p>{turma.classroom}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex space-x-2 mt-4">
-                          <Button variant="outline" size="sm">
-                            <Users className="h-4 w-4 mr-1" />
-                            Ver Alunos
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            Horários
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                  <div>
+                    <Label htmlFor="tuition">Propina (KZ)</Label>
+                    <Input
+                      id="tuition"
+                      type="number"
+                      step="0.01"
+                      value={formData.tuition}
+                      onChange={(e) => setFormData({ ...formData, tuition: e.target.value })}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
 
-            <TabsContent value="create" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <GraduationCap className="h-5 w-5 mr-2" />
-                    Criar Novo Curso
-                  </CardTitle>
-                  <CardDescription>Preencha as informações do novo curso</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="courseName">Nome do Curso *</Label>
-                        <Input
-                          id="courseName"
-                          placeholder="Ex: Engenharia Civil"
-                          value={newCourse.name}
-                          onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="coordinator">Coordenador *</Label>
-                        <Input
-                          id="coordinator"
-                          placeholder="Ex: Prof. João Silva"
-                          value={newCourse.coordinator}
-                          onChange={(e) => setNewCourse({ ...newCourse, coordinator: e.target.value })}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="duration">Duração *</Label>
-                        <Input
-                          id="duration"
-                          placeholder="Ex: 4 anos"
-                          value={newCourse.duration}
-                          onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="fee">Propina Mensal *</Label>
-                        <Input
-                          id="fee"
-                          placeholder="Ex: 35.000 KZ"
-                          value={newCourse.fee}
-                          onChange={(e) => setNewCourse({ ...newCourse, fee: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="schedule">Horário</Label>
-                        <Input
-                          id="schedule"
-                          placeholder="Ex: Manhã e Tarde"
-                          value={newCourse.schedule}
-                          onChange={(e) => setNewCourse({ ...newCourse, schedule: e.target.value })}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="requirements">Pré-requisitos</Label>
-                        <textarea
-                          id="requirements"
-                          className="w-full h-20 px-3 py-2 border border-input bg-background rounded-md"
-                          placeholder="Ex: Ensino Médio completo, Matemática..."
-                          value={newCourse.requirements}
-                          onChange={(e) => setNewCourse({ ...newCourse, requirements: e.target.value })}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="description">Descrição</Label>
-                        <textarea
-                          id="description"
-                          className="w-full h-20 px-3 py-2 border border-input bg-background rounded-md"
-                          placeholder="Descrição do curso..."
-                          value={newCourse.description}
-                          onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 flex space-x-4">
-                    <Button onClick={handleCreateCourse} className="flex-1">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Criar Curso
-                    </Button>
-                    <Button variant="outline" className="flex-1">
-                      Cancelar
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                <div>
+                  <Label htmlFor="requirements">Requisitos</Label>
+                  <Textarea
+                    id="requirements"
+                    value={formData.requirements}
+                    onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={createCourse.isPending || updateCourse.isPending}>
+                    {editingCourse ? 'Atualizar' : 'Criar'} Curso
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
+
+        {!institutionId ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-gray-500">
+                Nenhuma instituição encontrada. Crie uma instituição primeiro.
+              </p>
+            </CardContent>
+          </Card>
+        ) : isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Carregando cursos...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.map((course) => (
+              <Card key={course.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">{course.name}</CardTitle>
+                      <CardDescription className="mt-1">
+                        <Badge variant="outline">{getLevelName(course.level)}</Badge>
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {course.description && (
+                    <p className="text-gray-700 text-sm">{course.description}</p>
+                  )}
+                  
+                  <div className="space-y-2">
+                    {course.duration_years && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        <span>{course.duration_years} {course.duration_years === 1 ? 'ano' : 'anos'}</span>
+                      </div>
+                    )}
+                    {course.tuition && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <DollarSign className="h-4 w-4 mr-2" />
+                        <span>{course.tuition.toLocaleString()} KZ/mês</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(course)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(course.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {courses.length === 0 && !isLoading && (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Nenhum curso encontrado
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Comece criando o primeiro curso para sua instituição.
+              </p>
+              <Button onClick={() => setIsCreateOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Primeiro Curso
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </Layout>
   );
