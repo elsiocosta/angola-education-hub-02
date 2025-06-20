@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import Search from "./pages/Search";
 import Institution from "./pages/Institution";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
 import RegisterOptions from "./components/RegisterOptions";
 import VisitorRegister from "./components/VisitorRegister";
 import EmailVerification from "./components/EmailVerification";
