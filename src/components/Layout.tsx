@@ -1,7 +1,7 @@
-
 import React from 'react';
 import LayoutHeader from './layout/LayoutHeader';
 import LayoutFooter from './layout/LayoutFooter';
+import NavigationArrows from './NavigationArrows';
 
 // It was: interface LayoutProps {
 //   children: React.ReactNode;
@@ -63,6 +63,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <LayoutHeader navigationItems={navigationItems} />
+      <NavigationArrows />
       <main>{children}</main>
       <LayoutFooter />
     </div>
