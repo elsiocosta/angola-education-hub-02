@@ -1,3 +1,4 @@
+
 // Declare the 'google' namespace for TypeScript to avoid errors when accessing Google Maps API dynamically.
 declare global {
   interface Window {
@@ -37,7 +38,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     async function initializeMap() {
       // Busca a chave secreta
       const { data, error } = await supabase.functions.invoke("get-google-maps-key");
-      console.log("[GoogleMap] Supabase invoke response:", { data, error }); // Adicionado log
+      console.log("[GoogleMap] Supabase invoke response:", { data, error });
 
       if (error || !data?.key) {
         toast({
@@ -94,8 +95,13 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
     return () => {
       isMounted = false;
-      if (script) {
-        script.remove();
+      // Safe script removal with proper checks
+      if (script && script.parentNode && script.parentNode === document.body) {
+        try {
+          document.body.removeChild(script);
+        } catch (error) {
+          console.warn("[GoogleMap] Script already removed or not found:", error);
+        }
       }
     };
     // eslint-disable-next-line
