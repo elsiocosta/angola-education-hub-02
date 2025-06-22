@@ -1,14 +1,15 @@
 
-declare global {
-  interface Window {
-    google?: any;
-  }
-  var google: any;
-}
-
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+declare global {
+  interface Window {
+    google?: any;
+    initGoogleMap?: () => void;
+  }
+  var google: any;
+}
 
 interface GoogleMapProps {
   height?: string;
@@ -24,86 +25,108 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   center = DEFAULT_CENTER,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const mapInstanceRef = useRef<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    let mounted = true;
-    
-    const initMap = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    let isMounted = true;
 
-        // Check if Google Maps is already available
-        if (window.google && window.google.maps) {
-          if (mounted && mapRef.current) {
-            new window.google.maps.Map(mapRef.current, {
+    const initializeMap = async () => {
+      try {
+        console.log("[GoogleMap] Starting initialization");
+        
+        // If Google Maps is already loaded, just create the map
+        if (window.google?.maps && mapRef.current && isMounted) {
+          console.log("[GoogleMap] Google Maps already available, creating map");
+          mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+            center,
+            zoom,
+            disableDefaultUI: false,
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // Get API key from Supabase
+        console.log("[GoogleMap] Fetching API key");
+        const { data, error: apiError } = await supabase.functions.invoke("get-google-maps-key");
+        
+        if (apiError || !data?.key) {
+          throw new Error(`Failed to get API key: ${apiError?.message || 'No key received'}`);
+        }
+
+        // Check if script is already in DOM
+        const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+        if (existingScript) {
+          console.log("[GoogleMap] Script already exists, waiting for load");
+          // Wait for Google Maps to be available
+          let attempts = 0;
+          while (!window.google?.maps && attempts < 50 && isMounted) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+          
+          if (window.google?.maps && mapRef.current && isMounted) {
+            mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
               center,
               zoom,
               disableDefaultUI: false,
             });
-            setLoading(false);
+            setIsLoading(false);
           }
           return;
         }
 
-        // Get API key
-        const { data, error } = await supabase.functions.invoke("get-google-maps-key");
-        console.log("[GoogleMap] API response:", { data, error });
+        // Create and load script
+        console.log("[GoogleMap] Loading Google Maps script");
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.key}&language=pt`;
+        script.async = true;
+        script.defer = true;
 
-        if (error || !data?.key) {
-          throw new Error(`API Key error: ${error?.message || 'No key received'}`);
-        }
+        const loadPromise = new Promise<void>((resolve, reject) => {
+          script.onload = () => {
+            console.log("[GoogleMap] Script loaded successfully");
+            resolve();
+          };
+          script.onerror = () => {
+            console.error("[GoogleMap] Script failed to load");
+            reject(new Error("Failed to load Google Maps script"));
+          };
+        });
 
-        // Load script if not already loaded
-        if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
-          await new Promise<void>((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${data.key}&language=pt`;
-            script.async = true;
-            
-            script.onload = () => {
-              console.log("[GoogleMap] Script loaded successfully");
-              resolve();
-            };
-            
-            script.onerror = () => {
-              reject(new Error("Failed to load Google Maps script"));
-            };
-            
-            document.head.appendChild(script);
-          });
-        }
+        document.head.appendChild(script);
+        await loadPromise;
 
-        // Wait for Google Maps to be available
+        // Wait for Google Maps to be available and create map
         let attempts = 0;
-        while (!window.google?.maps && attempts < 50) {
+        while (!window.google?.maps && attempts < 50 && isMounted) {
           await new Promise(resolve => setTimeout(resolve, 100));
           attempts++;
         }
 
         if (!window.google?.maps) {
-          throw new Error("Google Maps failed to initialize");
+          throw new Error("Google Maps failed to initialize after loading");
         }
 
-        // Initialize map if component is still mounted
-        if (mounted && mapRef.current) {
-          new window.google.maps.Map(mapRef.current, {
+        if (mapRef.current && isMounted) {
+          console.log("[GoogleMap] Creating map instance");
+          mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
             center,
             zoom,
             disableDefaultUI: false,
           });
-          setLoading(false);
+          setIsLoading(false);
         }
 
       } catch (err) {
-        console.error("[GoogleMap] Error:", err);
-        if (mounted) {
-          const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        console.error("[GoogleMap] Error during initialization:", err);
+        if (isMounted) {
+          const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
           setError(errorMessage);
-          setLoading(false);
+          setIsLoading(false);
           toast({
             title: "Erro ao carregar Google Maps",
             description: errorMessage,
@@ -113,10 +136,15 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       }
     };
 
-    initMap();
+    initializeMap();
 
+    // Cleanup function
     return () => {
-      mounted = false;
+      console.log("[GoogleMap] Component unmounting");
+      isMounted = false;
+      // Don't try to manipulate the DOM or clean up the map instance
+      // Let React handle the DOM cleanup naturally
+      mapInstanceRef.current = null;
     };
   }, [center.lat, center.lng, zoom, toast]);
 
@@ -135,13 +163,14 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   }
 
   return (
-    <div
-      ref={mapRef}
-      className="w-full rounded-lg border border-gray-200 shadow"
-      style={{ height, minHeight: "300px", background: "#e5f4ff", position: "relative" }}
-    >
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+    <div className="relative w-full" style={{ height, minHeight: "300px" }}>
+      <div
+        ref={mapRef}
+        className="w-full h-full rounded-lg border border-gray-200 shadow"
+        style={{ background: "#e5f4ff" }}
+      />
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white/70 rounded-lg">
           <div className="text-blue-600 font-bold">Carregando mapa...</div>
         </div>
       )}
