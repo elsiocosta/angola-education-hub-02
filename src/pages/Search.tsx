@@ -35,8 +35,8 @@ const Search = () => {
       institution.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       institution.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesProvince = !selectedProvince || institution.province === selectedProvince;
-    const matchesType = !selectedType || institution.institution_type === selectedType;
+    const matchesProvince = !selectedProvince || selectedProvince === 'all' || institution.province === selectedProvince;
+    const matchesType = !selectedType || selectedType === 'all' || institution.institution_type === selectedType;
 
     return matchesSearch && matchesProvince && matchesType;
   });
@@ -70,7 +70,7 @@ const Search = () => {
                   <SelectValue placeholder="Selecionar província" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as províncias</SelectItem>
+                  <SelectItem value="all">Todas as províncias</SelectItem>
                   {provinces.map((province) => (
                     <SelectItem key={province} value={province}>
                       {province}
@@ -84,7 +84,7 @@ const Search = () => {
                   <SelectValue placeholder="Tipo de ensino" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
                   {institutionTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}

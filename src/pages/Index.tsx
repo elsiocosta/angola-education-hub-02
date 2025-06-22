@@ -107,6 +107,7 @@ const Index = () => {
                     <SelectValue placeholder="Província" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Todas as províncias</SelectItem>
                     {provinces.map((province) => (
                       <SelectItem key={province} value={province}>
                         {province}
@@ -120,6 +121,7 @@ const Index = () => {
                     <SelectValue placeholder="Nível de Ensino" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Todos os níveis</SelectItem>
                     {educationLevels.map((level) => (
                       <SelectItem key={level} value={level}>
                         {level}
