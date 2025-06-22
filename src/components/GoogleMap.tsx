@@ -1,5 +1,4 @@
 
-
 // Declare the 'google' namespace for TypeScript to avoid errors when accessing Google Maps API dynamically.
 declare global {
   interface Window {
@@ -22,9 +21,7 @@ interface GoogleMapProps {
 
 const DEFAULT_CENTER = { lat: -11.2027, lng: 17.8739 }; // Centro aproximado de Angola
 
-// Global flag to track if Google Maps script is loaded
-let isGoogleMapsLoaded = false;
-let isGoogleMapsLoading = false;
+// Global promise to track Google Maps loading
 let googleMapsPromise: Promise<void> | null = null;
 
 const GoogleMap: React.FC<GoogleMapProps> = ({
@@ -39,15 +36,38 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const { toast } = useToast();
 
   const loadGoogleMapsScript = async (): Promise<void> => {
-    if (isGoogleMapsLoaded) {
+    // If Google Maps is already loaded, return immediately
+    if (window.google && window.google.maps) {
       return Promise.resolve();
     }
 
-    if (isGoogleMapsLoading && googleMapsPromise) {
+    // If we're already loading, return the existing promise
+    if (googleMapsPromise) {
       return googleMapsPromise;
     }
 
-    isGoogleMapsLoading = true;
+    // Check if script already exists in the document
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      return new Promise((resolve, reject) => {
+        if (window.google && window.google.maps) {
+          resolve();
+        } else {
+          const checkGoogle = setInterval(() => {
+            if (window.google && window.google.maps) {
+              clearInterval(checkGoogle);
+              resolve();
+            }
+          }, 100);
+          
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            clearInterval(checkGoogle);
+            reject(new Error("Timeout loading Google Maps"));
+          }, 10000);
+        }
+      });
+    }
 
     googleMapsPromise = new Promise<void>(async (resolve, reject) => {
       try {
@@ -64,34 +84,25 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         const apiKey = data.key;
         console.log("[GoogleMap] Google Maps API Key utilizada:", apiKey);
 
-        // Check if script already exists
-        const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-        if (existingScript) {
-          isGoogleMapsLoaded = true;
-          isGoogleMapsLoading = false;
-          resolve();
-          return;
-        }
-
         // Create and load script
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt&callback=initGoogleMaps`;
         script.async = true;
+        script.defer = true;
 
-        script.onload = () => {
-          isGoogleMapsLoaded = true;
-          isGoogleMapsLoading = false;
+        // Create global callback
+        (window as any).initGoogleMaps = () => {
           resolve();
+          delete (window as any).initGoogleMaps;
         };
 
         script.onerror = () => {
-          isGoogleMapsLoading = false;
           reject(new Error(`Falha ao carregar script da API com a chave: ${apiKey}`));
+          delete (window as any).initGoogleMaps;
         };
 
         document.head.appendChild(script);
       } catch (err) {
-        isGoogleMapsLoading = false;
         reject(err);
       }
     });
@@ -111,8 +122,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
         if (!isMounted) return;
 
-        if (mapRef.current && window.google) {
-          // Destroy existing map instance if it exists
+        if (mapRef.current && window.google && window.google.maps) {
+          // Clean up existing map instance
           if (mapInstanceRef.current) {
             mapInstanceRef.current = null;
           }
@@ -146,7 +157,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
     return () => {
       isMounted = false;
-      // Clean up map instance
+      // Just null out the map reference, don't try to manipulate DOM
       if (mapInstanceRef.current) {
         mapInstanceRef.current = null;
       }
