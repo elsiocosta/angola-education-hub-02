@@ -1,11 +1,8 @@
 
-// Declare the 'google' namespace for TypeScript to avoid errors when accessing Google Maps API dynamically.
 declare global {
   interface Window {
     google?: any;
   }
-  // This type avoids errors when referencing 'google.maps'
-  // Add only what is needed, you may expand as needed.
   var google: any;
 }
 
@@ -19,10 +16,7 @@ interface GoogleMapProps {
   center?: { lat: number; lng: number };
 }
 
-const DEFAULT_CENTER = { lat: -11.2027, lng: 17.8739 }; // Centro aproximado de Angola
-
-// Global promise to track Google Maps loading
-let googleMapsPromise: Promise<void> | null = null;
+const DEFAULT_CENTER = { lat: -11.2027, lng: 17.8739 };
 
 const GoogleMap: React.FC<GoogleMapProps> = ({
   height = "400px",
@@ -30,118 +24,84 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   center = DEFAULT_CENTER,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const loadGoogleMapsScript = async (): Promise<void> => {
-    // If Google Maps is already loaded, return immediately
-    if (window.google && window.google.maps) {
-      return Promise.resolve();
-    }
-
-    // If we're already loading, return the existing promise
-    if (googleMapsPromise) {
-      return googleMapsPromise;
-    }
-
-    // Check if script already exists in the document
-    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-    if (existingScript) {
-      return new Promise((resolve, reject) => {
-        if (window.google && window.google.maps) {
-          resolve();
-        } else {
-          const checkGoogle = setInterval(() => {
-            if (window.google && window.google.maps) {
-              clearInterval(checkGoogle);
-              resolve();
-            }
-          }, 100);
-          
-          // Timeout after 10 seconds
-          setTimeout(() => {
-            clearInterval(checkGoogle);
-            reject(new Error("Timeout loading Google Maps"));
-          }, 10000);
-        }
-      });
-    }
-
-    googleMapsPromise = new Promise<void>(async (resolve, reject) => {
-      try {
-        // Fetch API key
-        const { data, error } = await supabase.functions.invoke("get-google-maps-key");
-        console.log("[GoogleMap] Supabase invoke response:", { data, error });
-
-        if (error || !data?.key) {
-          const errorMsg = `Erro: ${error?.message ?? "Sem erro. Resposta recebida:"} ${JSON.stringify(data)}`;
-          reject(new Error(errorMsg));
-          return;
-        }
-
-        const apiKey = data.key;
-        console.log("[GoogleMap] Google Maps API Key utilizada:", apiKey);
-
-        // Create and load script
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt&callback=initGoogleMaps`;
-        script.async = true;
-        script.defer = true;
-
-        // Create global callback
-        (window as any).initGoogleMaps = () => {
-          resolve();
-          delete (window as any).initGoogleMaps;
-        };
-
-        script.onerror = () => {
-          reject(new Error(`Falha ao carregar script da API com a chave: ${apiKey}`));
-          delete (window as any).initGoogleMaps;
-        };
-
-        document.head.appendChild(script);
-      } catch (err) {
-        reject(err);
-      }
-    });
-
-    return googleMapsPromise;
-  };
-
   useEffect(() => {
-    let isMounted = true;
-
-    const initializeMap = async () => {
+    let mounted = true;
+    
+    const initMap = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        await loadGoogleMapsScript();
-
-        if (!isMounted) return;
-
-        if (mapRef.current && window.google && window.google.maps) {
-          // Clean up existing map instance
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current = null;
+        // Check if Google Maps is already available
+        if (window.google && window.google.maps) {
+          if (mounted && mapRef.current) {
+            new window.google.maps.Map(mapRef.current, {
+              center,
+              zoom,
+              disableDefaultUI: false,
+            });
+            setLoading(false);
           }
+          return;
+        }
 
-          mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+        // Get API key
+        const { data, error } = await supabase.functions.invoke("get-google-maps-key");
+        console.log("[GoogleMap] API response:", { data, error });
+
+        if (error || !data?.key) {
+          throw new Error(`API Key error: ${error?.message || 'No key received'}`);
+        }
+
+        // Load script if not already loaded
+        if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
+          await new Promise<void>((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${data.key}&language=pt`;
+            script.async = true;
+            
+            script.onload = () => {
+              console.log("[GoogleMap] Script loaded successfully");
+              resolve();
+            };
+            
+            script.onerror = () => {
+              reject(new Error("Failed to load Google Maps script"));
+            };
+            
+            document.head.appendChild(script);
+          });
+        }
+
+        // Wait for Google Maps to be available
+        let attempts = 0;
+        while (!window.google?.maps && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+
+        if (!window.google?.maps) {
+          throw new Error("Google Maps failed to initialize");
+        }
+
+        // Initialize map if component is still mounted
+        if (mounted && mapRef.current) {
+          new window.google.maps.Map(mapRef.current, {
             center,
             zoom,
             disableDefaultUI: false,
           });
-
-          if (isMounted) {
-            setLoading(false);
-          }
+          setLoading(false);
         }
+
       } catch (err) {
-        console.error("[GoogleMap] Erro ao inicializar mapa:", err);
-        if (isMounted) {
-          const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+        console.error("[GoogleMap] Error:", err);
+        if (mounted) {
+          const errorMessage = err instanceof Error ? err.message : "Unknown error";
           setError(errorMessage);
           setLoading(false);
           toast({
@@ -153,14 +113,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       }
     };
 
-    initializeMap();
+    initMap();
 
     return () => {
-      isMounted = false;
-      // Just null out the map reference, don't try to manipulate DOM
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current = null;
-      }
+      mounted = false;
     };
   }, [center.lat, center.lng, zoom, toast]);
 
