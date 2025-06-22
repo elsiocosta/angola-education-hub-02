@@ -10,6 +10,9 @@ import MapSection from '@/components/MapSection';
 import FeaturedInstitutions from '@/components/FeaturedInstitutions';
 import StatsSection from '@/components/StatsSection';
 import Layout from '@/components/Layout';
+import AdvancedSearch from '@/components/AdvancedSearch';
+import LiveStats from '@/components/LiveStats';
+import FeedbackSystem from '@/components/FeedbackSystem';
 import { Link } from 'react-router-dom';
 
 const Index = () => {
@@ -48,6 +51,11 @@ const Index = () => {
               Criamos uma plataforma digital que centraliza informações sobre todas as instituições de ensino em Angola (primário, secundário, médio e superior), promovendo transparência, conectividade e modernização educacional.
             </p>
             
+            {/* Adicionar estatísticas ao vivo */}
+            <div className="mt-12">
+              <LiveStats />
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
               <div className="text-center">
                 <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -77,7 +85,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Search Section */}
+      {/* Advanced Search Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -85,59 +93,16 @@ const Index = () => {
               Encontre a Instituição Ideal
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Explore milhares de escolas, institutos e universidades em todo Angola
+              Use nossa busca avançada para encontrar exatamente o que procura
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <Input
-                    placeholder="Nome da instituição..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-12 border-gray-200 focus:border-blue-500"
-                  />
-                </div>
-                
-                <Select value={selectedProvince} onValueChange={setSelectedProvince}>
-                  <SelectTrigger className="h-12 border-gray-200 focus:border-blue-500">
-                    <SelectValue placeholder="Província" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as províncias</SelectItem>
-                    {provinces.map((province) => (
-                      <SelectItem key={province} value={province}>
-                        {province}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                  <SelectTrigger className="h-12 border-gray-200 focus:border-blue-500">
-                    <SelectValue placeholder="Nível de Ensino" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os níveis</SelectItem>
-                    {educationLevels.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Link to="/search">
-                  <Button className="h-12 w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-                    <Search className="h-5 w-5 mr-2" />
-                    Pesquisar
-                  </Button>
-                </Link>
-              </div>
-            </div>
+            <AdvancedSearch onSearch={(filters) => {
+              console.log('Filtros de busca:', filters);
+              // Aqui seria implementada a lógica de busca
+              window.location.href = '/search';
+            }} />
           </div>
         </div>
       </section>
@@ -270,6 +235,24 @@ const Index = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Feedback Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              O que dizem sobre nossas instituições
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Avaliações e feedback de estudantes e visitantes
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <FeedbackSystem />
           </div>
         </div>
       </section>
