@@ -2,30 +2,38 @@
 import React from 'react';
 import { GraduationCap, Users, MapPin, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePlatformStats } from '@/hooks/usePlatformStats';
 
 const StatsSection = () => {
+  const { data: platformStats, isLoading } = usePlatformStats();
+
   const stats = [
     {
       icon: Building,
-      value: "1,500+",
+      value: isLoading ? "..." : `${platformStats?.total_institutions || 0}+`,
       label: "Instituições Registradas",
       description: "Escolas, institutos e universidades em toda Angola"
     },
     {
       icon: Users,
-      value: "100K+",
+      value: isLoading ? "..." : 
+        platformStats?.total_students ? 
+          (platformStats.total_students >= 1000 ? 
+            `${Math.floor(platformStats.total_students / 1000)}K+` : 
+            `${platformStats.total_students}+`) : 
+          "0+",
       label: "Estudantes Conectados",
       description: "Comunidade ativa de estudantes e educadores"
     },
     {
       icon: MapPin,
-      value: "21",
+      value: "18",
       label: "Províncias Cobertas",
       description: "Presença em todo o território nacional"
     },
     {
       icon: GraduationCap,
-      value: "500+",
+      value: isLoading ? "..." : `${platformStats?.total_courses || 0}+`,
       label: "Cursos Disponíveis",
       description: "Diversidade de opções de formação"
     }

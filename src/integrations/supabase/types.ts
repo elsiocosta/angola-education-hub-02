@@ -315,6 +315,33 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_stats: {
+        Row: {
+          active_users: number | null
+          id: string
+          total_courses: number | null
+          total_institutions: number | null
+          total_students: number | null
+          updated_at: string
+        }
+        Insert: {
+          active_users?: number | null
+          id?: string
+          total_courses?: number | null
+          total_institutions?: number | null
+          total_students?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active_users?: number | null
+          id?: string
+          total_courses?: number | null
+          total_institutions?: number | null
+          total_students?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -453,6 +480,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sessions: {
+        Row: {
+          id: string
+          is_active: boolean | null
+          last_seen: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean | null
+          last_seen?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean | null
+          last_seen?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       verification_codes: {
         Row: {
           code: string
@@ -491,7 +539,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_platform_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

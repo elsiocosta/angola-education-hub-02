@@ -67,6 +67,35 @@ export const useInstitutionsByProvince = (province?: string) => {
   });
 };
 
+export const useInstitutionStats = () => {
+  return useQuery({
+    queryKey: ['institution-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('institutions')
+        .select('status, institution_type, province')
+        .eq('status', 'approved');
+      
+      if (error) throw error;
+
+      const stats = {
+        total: data.length,
+        byType: data.reduce((acc, inst) => {
+          acc[inst.institution_type] = (acc[inst.institution_type] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+        byProvince: data.reduce((acc, inst) => {
+          acc[inst.province] = (acc[inst.province] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      };
+
+      return stats;
+    },
+    refetchInterval: 30000,
+  });
+};
+
 export const useCreateInstitution = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -84,6 +113,7 @@ export const useCreateInstitution = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['institutions'] });
+      queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
       toast({
         title: "Sucesso",
         description: "Instituição criada com sucesso!"
