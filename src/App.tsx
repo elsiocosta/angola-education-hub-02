@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +32,8 @@ import Blog from "./pages/Blog";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Documents from "./pages/Documents";
+import ForgotPassword from "./pages/ForgotPassword";
+import ForgotPasswordRedirect from "./pages/ForgotPasswordRedirect";
 import { AuthProvider } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,8 @@ const App = () => (
             <Route path="/register/institution" element={<Register />} />
             <Route path="/verify-email" element={<EmailVerification />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/forgot-password-redirect" element={<ForgotPasswordRedirect />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Dashboard Routes */}

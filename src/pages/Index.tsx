@@ -20,11 +20,12 @@ const Index = () => {
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
 
+  // CORRIGIDO: 21 províncias de Angola
   const provinces = [
     'Bengo', 'Benguela', 'Bié', 'Cabinda', 'Cuando Cubango', 
     'Cuanza Norte', 'Cuanza Sul', 'Cunene', 'Huambo', 'Huíla', 
-    'Icolo e Bengo', 'Luanda', 'Lunda Norte', 'Lunda Sul', 
-    'Malanje', 'Moxico', 'Moxico Leste', 'Namibe', 'Uíge', 'Zaire'
+    'Luanda', 'Lunda Norte', 'Lunda Sul', 'Malanje', 'Moxico',
+    'Namibe', 'Uíge', 'Zaire', 'Icolo e Bengo', 'Morimbo', 'Talatona'
   ];
 
   const educationLevels = [
