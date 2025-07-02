@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Filter, Search, X } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Filter, Search, X, MapPin, GraduationCap, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface MapFiltersProps {
   onFilterChange: (filters: FilterState) => void;
@@ -30,7 +30,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
     'Bengo', 'Benguela', 'Bié', 'Cabinda', 'Cuando Cubango',
     'Cuanza Norte', 'Cuanza Sul', 'Cunene', 'Huambo', 'Huíla',
     'Luanda', 'Lunda Norte', 'Lunda Sul', 'Malanje', 'Moxico',
-    'Namibe', 'Uíge', 'Zaire', 'Icolo e Bengo', 'Moxico Leste', 'Morimbo'
+    'Namibe', 'Uíge', 'Zaire', 'Icolo e Bengo', 'Morimbo', 'Talatona'
   ];
 
   const institutionTypes = [
@@ -66,99 +66,119 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
 
   return (
     <div className="relative">
-      {/* Controls Row */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="border-gray-200"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filtros
-            {(filters.province || filters.institutionType || filters.tuitionRange) && (
-              <span className="ml-2 bg-blue-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+      {/* Enhanced Controls Row */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 mb-6">
+        {/* Filter Toggle */}
+        <EnhancedButton 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full lg:w-auto"
+          leftIcon={<Filter className="h-4 w-4" />}
+          rightIcon={
+            (filters.province || filters.institutionType || filters.tuitionRange) ? (
+              <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
                 {[filters.province, filters.institutionType, filters.tuitionRange].filter(Boolean).length}
               </span>
-            )}
-          </Button>
-          
-          <div className="flex items-center space-x-2">
+            ) : null
+          }
+        >
+          Filtros Avançados
+        </EnhancedButton>
+        
+        {/* Search Input */}
+        <div className="flex-1 flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               type="text"
-              placeholder="Pesquisar instituições..."
+              placeholder="Pesquisar por nome, localização ou tipo..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 border-gray-200"
+              className="pl-10 bg-background/50 backdrop-blur-sm border-border/50"
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
-            <Button variant="outline" size="sm" onClick={handleSearch}>
-              <Search className="h-4 w-4" />
-            </Button>
           </div>
+          <EnhancedButton 
+            variant="gradient" 
+            size="sm" 
+            onClick={handleSearch}
+            leftIcon={<Search className="h-4 w-4" />}
+          >
+            Buscar
+          </EnhancedButton>
         </div>
+      </div>
         
-        <div className="flex items-center space-x-4 text-sm text-gray-600">
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-            Ensino Primário
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-            Ensino Secundário
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-            Ensino Médio
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-            Ensino Superior
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-            Ensino Técnico
-          </div>
+      {/* Map Legend */}
+      <div className="flex flex-wrap items-center justify-center gap-3 lg:gap-6 text-sm">
+        <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-border/30">
+          <div className="w-3 h-3 bg-primary rounded-full"></div>
+          <span className="font-medium text-foreground">Primário</span>
+        </div>
+        <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-border/30">
+          <div className="w-3 h-3 bg-secondary rounded-full"></div>
+          <span className="font-medium text-foreground">Secundário</span>
+        </div>
+        <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-border/30">
+          <div className="w-3 h-3 bg-accent rounded-full"></div>
+          <span className="font-medium text-foreground">Médio</span>
+        </div>
+        <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-border/30">
+          <div className="w-3 h-3 bg-success rounded-full"></div>
+          <span className="font-medium text-foreground">Superior</span>
+        </div>
+        <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-border/30">
+          <div className="w-3 h-3 bg-destructive rounded-full"></div>
+          <span className="font-medium text-foreground">Técnico</span>
         </div>
       </div>
 
-      {/* Filters Panel */}
+      {/* Enhanced Filters Panel */}
       {isOpen && (
-        <Card className="mb-4">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Filtros Avançados</h3>
-              <div className="flex items-center space-x-2">
-                <Button 
+        <Card className="mb-6 shadow-xl border-border/50 bg-card/80 backdrop-blur-lg">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-xl">
+                  <Filter className="h-5 w-5 text-primary" />
+                </div>
+                Filtros Avançados
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <EnhancedButton 
                   variant="ghost" 
                   size="sm" 
                   onClick={clearFilters}
-                  className="text-gray-500 hover:text-red-600"
+                  leftIcon={<X className="h-4 w-4" />}
+                  className="text-destructive hover:text-destructive"
                 >
-                  Limpar Todos
-                </Button>
-                <Button 
+                  Limpar
+                </EnhancedButton>
+                <EnhancedButton 
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setIsOpen(false)}
                 >
                   <X className="h-4 w-4" />
-                </Button>
+                </EnhancedButton>
               </div>
             </div>
+          </CardHeader>
+          <CardContent>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Province Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <MapPin className="h-4 w-4 text-primary" />
                   Província
                 </label>
                 <Select value={filters.province} onValueChange={(value) => handleFilterChange('province', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background/50 border-border/50">
                     <SelectValue placeholder="Todas as províncias" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background/95 backdrop-blur-md">
                     <SelectItem value="">Todas as províncias</SelectItem>
                     {provinces.map((province) => (
                       <SelectItem key={province} value={province}>
@@ -170,15 +190,16 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
               </div>
 
               {/* Institution Type Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <GraduationCap className="h-4 w-4 text-secondary" />
                   Nível de Ensino
                 </label>
                 <Select value={filters.institutionType} onValueChange={(value) => handleFilterChange('institutionType', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background/50 border-border/50">
                     <SelectValue placeholder="Todos os níveis" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background/95 backdrop-blur-md">
                     <SelectItem value="">Todos os níveis</SelectItem>
                     {institutionTypes.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
@@ -190,15 +211,16 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
               </div>
 
               {/* Tuition Range Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <DollarSign className="h-4 w-4 text-accent" />
                   Faixa de Propinas
                 </label>
                 <Select value={filters.tuitionRange} onValueChange={(value) => handleFilterChange('tuitionRange', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background/50 border-border/50">
                     <SelectValue placeholder="Todas as faixas" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background/95 backdrop-blur-md">
                     <SelectItem value="">Todas as faixas</SelectItem>
                     {tuitionRanges.map((range) => (
                       <SelectItem key={range.value} value={range.value}>
@@ -208,6 +230,19 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            
+            {/* Apply Filters Button */}
+            <div className="flex justify-center mt-6">
+              <EnhancedButton 
+                variant="gradient" 
+                size="lg"
+                onClick={() => setIsOpen(false)}
+                leftIcon={<Filter className="h-5 w-5" />}
+                className="w-full lg:w-auto"
+              >
+                Aplicar Filtros
+              </EnhancedButton>
             </div>
           </CardContent>
         </Card>

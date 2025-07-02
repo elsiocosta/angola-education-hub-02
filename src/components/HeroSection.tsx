@@ -1,21 +1,37 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Play, ArrowRight, Users, MapPin, GraduationCap } from 'lucide-react';
+import { EnhancedButton } from '@/components/ui/enhanced-button';
+import { Play, ArrowRight, Users, MapPin, GraduationCap, Star, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import heroImage from '@/assets/hero-education.jpg';
 
 const HeroSection = () => {
   return (
-    <section className="relative py-20 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 opacity-95"></div>
+    <section className="relative min-h-screen flex items-center overflow-hidden">
+      {/* Background image */}
+      <div className="absolute inset-0">
+        <img 
+          src={heroImage} 
+          alt="Angola Education Platform" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-secondary/90"></div>
+      </div>
       
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-20 h-20 border border-white rounded-full"></div>
-        <div className="absolute top-32 right-20 w-16 h-16 border border-white rounded-full"></div>
-        <div className="absolute bottom-20 left-1/4 w-12 h-12 border border-white rounded-full"></div>
-        <div className="absolute bottom-32 right-1/3 w-24 h-24 border border-white rounded-full"></div>
+      {/* Animated background elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-10 left-10 w-20 h-20 border-2 border-white rounded-full animate-pulse"></div>
+        <div className="absolute top-32 right-20 w-16 h-16 border-2 border-white rounded-full animate-pulse delay-300"></div>
+        <div className="absolute bottom-20 left-1/4 w-12 h-12 border-2 border-white rounded-full animate-pulse delay-700"></div>
+        <div className="absolute bottom-32 right-1/3 w-24 h-24 border-2 border-white rounded-full animate-pulse delay-1000"></div>
+        
+        {/* Floating icons */}
+        <div className="absolute top-1/4 left-1/3 animate-bounce">
+          <Star className="h-6 w-6 text-white" />
+        </div>
+        <div className="absolute bottom-1/3 right-1/4 animate-bounce delay-500">
+          <Zap className="h-8 w-8 text-white" />
+        </div>
       </div>
 
       <div className="relative container mx-auto px-4">
@@ -38,20 +54,28 @@ const HeroSection = () => {
               da nossa plataforma digital moderna e intuitiva.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/search">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold">
-                  <Users className="mr-2 h-5 w-5" />
+            <div className="flex flex-col sm:flex-row gap-6">
+              <Link to="/search" className="group">
+                <EnhancedButton 
+                  size="xl" 
+                  variant="glass"
+                  leftIcon={<Users className="h-6 w-6" />}
+                  rightIcon={<ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />}
+                  className="w-full sm:w-auto"
+                >
                   Explorar Instituições
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                </EnhancedButton>
               </Link>
               
-              <Link to="/about">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg font-semibold">
-                  <Play className="mr-2 h-5 w-5" />
+              <Link to="/about" className="group">
+                <EnhancedButton 
+                  size="xl" 
+                  variant="outline"
+                  leftIcon={<Play className="h-6 w-6" />}
+                  className="w-full sm:w-auto border-white text-white hover:bg-white/10"
+                >
                   Ver Como Funciona
-                </Button>
+                </EnhancedButton>
               </Link>
             </div>
             
@@ -71,42 +95,45 @@ const HeroSection = () => {
             </div>
           </div>
           
-          <div className="relative">
-            {/* Hero illustration placeholder */}
-            <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+          <div className="relative lg:block hidden">
+            {/* Interactive feature grid */}
+            <div className="relative bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/30 shadow-2xl">
               <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
-                  <MapPin className="h-8 w-8 text-white mb-3" />
-                  <h3 className="text-white font-semibold mb-2">Localização</h3>
-                  <p className="text-blue-100 text-sm">Encontre instituições próximas de si</p>
+                <div className="bg-white/20 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/30 transition-all duration-300 transform hover:scale-105 group cursor-pointer">
+                  <MapPin className="h-10 w-10 text-white mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-white font-bold mb-2">Mapa Interativo</h3>
+                  <p className="text-blue-100 text-sm">Encontre instituições próximas com geolocalização precisa</p>
                 </div>
                 
-                <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
-                  <GraduationCap className="h-8 w-8 text-white mb-3" />
-                  <h3 className="text-white font-semibold mb-2">Cursos</h3>
-                  <p className="text-blue-100 text-sm">Explore opções de formação</p>
+                <div className="bg-white/20 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/30 transition-all duration-300 transform hover:scale-105 group cursor-pointer">
+                  <GraduationCap className="h-10 w-10 text-white mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-white font-bold mb-2">Cursos Diversos</h3>
+                  <p className="text-blue-100 text-sm">Explore cursos primários, secundários e superiores</p>
                 </div>
                 
-                <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
-                  <Users className="h-8 w-8 text-white mb-3" />
-                  <h3 className="text-white font-semibold mb-2">Comunidade</h3>
-                  <p className="text-blue-100 text-sm">Conecte-se com colegas</p>
+                <div className="bg-white/20 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/30 transition-all duration-300 transform hover:scale-105 group cursor-pointer">
+                  <Users className="h-10 w-10 text-white mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-white font-bold mb-2">Rede Social</h3>
+                  <p className="text-blue-100 text-sm">Conecte-se com estudantes e instituições</p>
                 </div>
                 
-                <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
-                  <Play className="h-8 w-8 text-white mb-3" />
-                  <h3 className="text-white font-semibold mb-2">Vídeos</h3>
-                  <p className="text-blue-100 text-sm">Conheça as instituições</p>
+                <div className="bg-white/20 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/30 transition-all duration-300 transform hover:scale-105 group cursor-pointer">
+                  <Play className="h-10 w-10 text-white mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="text-white font-bold mb-2">Conteúdo Rica</h3>
+                  <p className="text-blue-100 text-sm">Vídeos e materiais informativos</p>
                 </div>
               </div>
             </div>
             
-            {/* Floating elements */}
-            <div className="absolute -top-4 -right-4 bg-yellow-400 text-yellow-900 p-3 rounded-full shadow-lg">
-              <GraduationCap className="h-6 w-6" />
+            {/* Floating action elements */}
+            <div className="absolute -top-6 -right-6 bg-accent text-white p-4 rounded-2xl shadow-xl animate-bounce">
+              <GraduationCap className="h-8 w-8" />
             </div>
-            <div className="absolute -bottom-4 -left-4 bg-green-400 text-green-900 p-3 rounded-full shadow-lg">
-              <MapPin className="h-6 w-6" />
+            <div className="absolute -bottom-6 -left-6 bg-secondary text-white p-4 rounded-2xl shadow-xl animate-bounce delay-500">
+              <MapPin className="h-8 w-8" />
+            </div>
+            <div className="absolute top-1/2 -right-4 bg-success text-white p-3 rounded-xl shadow-lg animate-pulse">
+              <Star className="h-6 w-6" />
             </div>
           </div>
         </div>
