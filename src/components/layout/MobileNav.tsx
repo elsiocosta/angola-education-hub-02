@@ -2,7 +2,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Facebook, Instagram } from "lucide-react";
+import { Facebook, Instagram, Linkedin } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MobileNavProps {
   navigationItems: any[];
@@ -14,6 +15,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
   setMobileMenuOpen
 }) => {
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <div className="lg:hidden mt-4 pb-4 border-t border-gray-200">
@@ -49,6 +51,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
             )}
           </div>
         ))}
+
         {/* Mobile Social Media */}
         <div className="pt-4 border-t border-gray-200">
           <div className="flex items-center space-x-4 mb-4">
@@ -69,19 +72,44 @@ const MobileNav: React.FC<MobileNavProps> = ({
             >
               <Instagram className="h-5 w-5" />
             </a>
+            <a 
+              href="https://www.linkedin.com/in/ango-education-067842372" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="p-2 text-blue-700 hover:bg-blue-50 rounded-full transition-colors"
+            >
+              <Linkedin className="h-5 w-5" />
+            </a>
           </div>
         </div>
+
+        {/* Auth Buttons */}
         <div className="space-y-2">
-          <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-600 hover:bg-blue-50">
-              Entrar
-            </Button>
-          </Link>
-          <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-              Registar Instituição
-            </Button>
-          </Link>
+          {user ? (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-600 mb-2">
+                Olá, {user.user_metadata?.name || user.email}
+              </div>
+              <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+                  Dashboard
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full border-blue-200 text-blue-600 hover:bg-blue-50">
+                  Entrar
+                </Button>
+              </Link>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+                  Registar Instituição
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

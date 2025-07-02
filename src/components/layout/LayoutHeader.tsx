@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { GraduationCap, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,48 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const LayoutHeader = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navigationItems = [
+    {
+      name: 'Início',
+      href: '/',
+      hasDropdown: false
+    },
+    {
+      name: 'Instituições',
+      href: '/search',
+      hasDropdown: true,
+      dropdownItems: [
+        {
+          name: 'Buscar Instituições',
+          href: '/search',
+          description: 'Encontre a instituição ideal para você'
+        },
+        {
+          name: 'Registrar Instituição',
+          href: '/register',
+          description: 'Cadastre sua instituição na plataforma'
+        }
+      ]
+    },
+    {
+      name: 'Feed',
+      href: '/feed',
+      hasDropdown: false
+    },
+    {
+      name: 'Sobre',
+      href: '/about',
+      hasDropdown: false
+    },
+    {
+      name: 'Suporte',
+      href: '/support',
+      hasDropdown: false
+    }
+  ];
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
@@ -29,10 +71,23 @@ const LayoutHeader = () => {
 
           {/* Navigation - responsive */}
           {isMobile ? (
-            <MobileNav />
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden"
+              >
+                <Menu className="h-6 w-6" />
+              </Button>
+            </div>
           ) : (
             <div className="flex items-center space-x-6">
-              <DesktopNav />
+              <DesktopNav 
+                navigationItems={navigationItems}
+                openDropdown={openDropdown}
+                setOpenDropdown={setOpenDropdown}
+              />
               
               {/* Auth Buttons */}
               <div className="flex items-center space-x-3">
@@ -65,6 +120,14 @@ const LayoutHeader = () => {
             </div>
           )}
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && isMobile && (
+          <MobileNav 
+            navigationItems={navigationItems}
+            setMobileMenuOpen={setMobileMenuOpen}
+          />
+        )}
       </div>
     </header>
   );
