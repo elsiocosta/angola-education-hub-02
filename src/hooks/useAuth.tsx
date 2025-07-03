@@ -3,29 +3,89 @@ import { useEffect, useState, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { User as UserProfile, UserRole } from "@/types/user";
 
 // AuthContext para uso global (provider/consumer)
-const AuthContext = createContext<any>(null);
+interface AuthContextType {
+  user: User | null;
+  userProfile: UserProfile | null;
+  session: Session | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (data: { email: string; password: string; name: string }) => Promise<boolean>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<boolean>;
+  isLoading: boolean;
+}
 
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+  }
+  return context;
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Função para buscar perfil do usuário
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar perfil:', error);
+        return null;
+      }
+
+      return data as UserProfile;
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    // Listener de auth state, evitar funções async diretas
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Listener de auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const profile = await fetchUserProfile(session.user.id);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
+      
+      setIsLoading(false);
     });
 
     // Sessão inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
-    });
+      
+      if (session?.user) {
+        const profile = await fetchUserProfile(session.user.id);
+        setUserProfile(profile);
+      }
+      
+      setIsLoading(false);
+    };
+
+    initializeAuth();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -101,7 +161,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, login, signup, logout, resetPassword }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      userProfile, 
+      session, 
+      login, 
+      signup, 
+      logout, 
+      resetPassword, 
+      isLoading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
