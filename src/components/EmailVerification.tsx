@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, ArrowLeft, RefreshCw } from 'lucide-react';
@@ -113,6 +112,13 @@ const EmailVerification = () => {
             navigate('/dashboard/institution');
           }
         }, 2000);
+      } else {
+        toast({
+          title: "Erro ao criar conta",
+          description: "Verifique se o email já está em uso ou se a senha atende aos requisitos.",
+          variant: "destructive",
+        });
+        return;
       }
 
     } catch (error) {
