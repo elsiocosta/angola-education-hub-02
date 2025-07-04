@@ -8,7 +8,7 @@ import { User as UserProfile, UserRole } from "@/types/user";
 // AuthContext para uso global (provider/consumer)
 interface AuthContextType {
   user: User | null;
-  userProfile: UserProfile | null;
+  userProfile: any | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (data: { email: string; password: string; name: string }) => Promise<boolean>;
@@ -29,7 +29,7 @@ export const useAuth = () => {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<any | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
-      return data as UserProfile;
+      return data;
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       return null;

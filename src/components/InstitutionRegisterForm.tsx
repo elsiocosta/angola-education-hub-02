@@ -51,17 +51,6 @@ const InstitutionRegisterForm = () => {
     setIsLoading(true);
 
     try {
-      // Verificar se o email já está cadastrado no Supabase Auth
-      const { data: existingUser, error: fetchError } = await supabase.auth.admin.getUserByEmail(formData.email);
-      if (existingUser && existingUser.user) {
-        toast({
-          title: "Email já cadastrado",
-          description: "Já existe uma conta com este email. Tente recuperar a senha ou use outro email.",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
       // Gerar código de verificação
       const verificationCode = Math.random().toString().substr(2, 6);
 

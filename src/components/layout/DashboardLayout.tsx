@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/types/user';
-import { LayoutHeader } from './LayoutHeader';
-import { LayoutFooter } from './LayoutFooter';
+import LayoutHeader from './LayoutHeader';
+import LayoutFooter from './LayoutFooter';
 import { Sidebar } from './Sidebar';
 
 interface DashboardLayoutProps {
@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
 
   const getSidebarItems = (role: UserRole) => {
     switch (role) {
@@ -79,7 +79,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   };
 
-  const sidebarItems = user ? getSidebarItems(user.role) : [];
+  const sidebarItems = userProfile ? getSidebarItems('visitor') : [];
 
   return (
     <div className="min-h-screen bg-gray-50">

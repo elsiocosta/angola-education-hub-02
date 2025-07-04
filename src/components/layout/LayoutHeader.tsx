@@ -111,7 +111,7 @@ const LayoutHeader = () => {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={userProfile?.avatar} alt={userProfile?.name} />
+                            <AvatarImage src={'/placeholder.svg'} alt={userProfile?.name} />
                             <AvatarFallback>
                               {userProfile?.name?.charAt(0) || user.email?.charAt(0) || 'U'}
                             </AvatarFallback>

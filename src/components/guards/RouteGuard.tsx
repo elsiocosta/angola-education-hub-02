@@ -26,7 +26,7 @@ export const RouteGuard = ({
   }
 
   // Verifica se o usuário tem o papel necessário
-  if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
+  if (requiredRoles.length > 0 && !requiredRoles.includes(user.role as UserRole)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
