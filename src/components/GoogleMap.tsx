@@ -113,6 +113,33 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     return labels[type as keyof typeof labels] || type;
   };
 
+  const loadGoogleMapsScript = async (apiKey: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // Check if script already exists
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
+
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt&loading=async`;
+      script.async = true;
+      script.defer = true;
+
+      script.onload = () => {
+        console.log("[GoogleMap] Script loaded successfully");
+        resolve();
+      };
+      
+      script.onerror = () => {
+        console.error("[GoogleMap] Script failed to load");
+        reject(new Error("Failed to load Google Maps script"));
+      };
+
+      document.head.appendChild(script);
+    });
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -127,7 +154,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
             center,
             zoom,
             disableDefaultUI: false,
-            mapTypeId: 'satellite', // Usar vista satélite por padrão
+            mapTypeId: 'satellite',
             mapTypeControl: true,
             mapTypeControlOptions: {
               style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -137,7 +164,6 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           });
           setIsLoading(false);
           
-          // Adicionar marcadores das instituições
           if (showInstitutions) {
             addInstitutionMarkers();
           }
@@ -152,61 +178,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           throw new Error(`Failed to get API key: ${apiError?.message || 'No key received'}`);
         }
 
-        // Check if script is already in DOM
-        const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-        if (existingScript) {
-          console.log("[GoogleMap] Script already exists, waiting for load");
-          // Wait for Google Maps to be available
-          let attempts = 0;
-          while (!window.google?.maps && attempts < 50 && isMounted) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-          }
-          
-          if (window.google?.maps && mapRef.current && isMounted) {
-            mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-              center,
-              zoom,
-              disableDefaultUI: false,
-              mapTypeId: 'satellite',
-              mapTypeControl: true,
-              mapTypeControlOptions: {
-                style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                position: window.google.maps.ControlPosition.TOP_RIGHT,
-                mapTypeIds: ['roadmap', 'satellite', 'hybrid', 'terrain']
-              }
-            });
-            setIsLoading(false);
-            
-            if (showInstitutions) {
-              addInstitutionMarkers();
-            }
-          }
-          return;
-        }
-
-        // Create and load script
+        // Load script with proper async loading
         console.log("[GoogleMap] Loading Google Maps script");
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.key}&language=pt`;
-        script.async = true;
-        script.defer = true;
+        await loadGoogleMapsScript(data.key);
 
-        const loadPromise = new Promise<void>((resolve, reject) => {
-          script.onload = () => {
-            console.log("[GoogleMap] Script loaded successfully");
-            resolve();
-          };
-          script.onerror = () => {
-            console.error("[GoogleMap] Script failed to load");
-            reject(new Error("Failed to load Google Maps script"));
-          };
-        });
-
-        document.head.appendChild(script);
-        await loadPromise;
-
-        // Wait for Google Maps to be available and create map
+        // Wait for Google Maps to be available
         let attempts = 0;
         while (!window.google?.maps && attempts < 50 && isMounted) {
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -259,7 +235,6 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     return () => {
       console.log("[GoogleMap] Component unmounting");
       isMounted = false;
-      // Limpar marcadores
       markersRef.current.forEach(marker => marker.setMap(null));
       markersRef.current = [];
       mapInstanceRef.current = null;

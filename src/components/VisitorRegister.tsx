@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
@@ -48,6 +49,8 @@ const VisitorRegister = () => {
       // Gerar código de verificação
       const verificationCode = Math.random().toString().substr(2, 6);
 
+      console.log('Inserting verification code for:', formData.email);
+
       // Salvar dados temporários no banco
       const { error: insertError } = await supabase
         .from('verification_codes')
@@ -63,10 +66,15 @@ const VisitorRegister = () => {
           expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
+
+      console.log('Sending verification email to:', formData.email);
 
       // Enviar email de verificação
-      const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-verification-email', {
         body: {
           email: formData.email,
           code: verificationCode,
@@ -74,7 +82,12 @@ const VisitorRegister = () => {
         }
       });
 
-      if (emailError) throw emailError;
+      console.log('Email function response:', { emailData, emailError });
+
+      if (emailError) {
+        console.error('Email error:', emailError);
+        throw new Error(`Erro ao enviar email: ${emailError.message}`);
+      }
 
       toast({
         title: "Código enviado!",
@@ -96,9 +109,18 @@ const VisitorRegister = () => {
       
     } catch (error: any) {
       console.error('Registration error:', error);
+      
+      let errorMessage = "Tente novamente mais tarde";
+      
+      if (error?.message?.includes('duplicate key')) {
+        errorMessage = "Este email já está sendo processado. Verifique sua caixa de entrada.";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro ao criar conta",
-        description: error?.message || "Tente novamente mais tarde",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

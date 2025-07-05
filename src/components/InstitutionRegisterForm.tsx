@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building, Mail, Lock, Phone, Eye, EyeOff } from 'lucide-react';
@@ -33,7 +34,7 @@ const InstitutionRegisterForm = () => {
     'Bengo', 'Benguela', 'Bié', 'Cabinda', 'Cuando Cubango', 
     'Cuanza Norte', 'Cuanza Sul', 'Cunene', 'Huambo', 'Huíla', 
     'Icolo e Bengo', 'Luanda', 'Lunda Norte', 'Lunda Sul', 
-    'Malanje', 'Moxico', 'Moxico Leste', 'Namibe', 'Uíge', 'Zaire'
+    'Malanje', 'Moxico', 'Namibe', 'Uíge', 'Zaire'
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,6 +55,8 @@ const InstitutionRegisterForm = () => {
       // Gerar código de verificação
       const verificationCode = Math.random().toString().substr(2, 6);
 
+      console.log('Inserting verification code for institution:', formData.email);
+
       // Salvar dados temporários no banco
       const { error: insertError } = await supabase
         .from('verification_codes')
@@ -72,10 +75,15 @@ const InstitutionRegisterForm = () => {
           expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
+
+      console.log('Sending verification email to institution:', formData.email);
 
       // Enviar email de verificação
-      const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-verification-email', {
         body: {
           email: formData.email,
           code: verificationCode,
@@ -83,7 +91,12 @@ const InstitutionRegisterForm = () => {
         }
       });
 
-      if (emailError) throw emailError;
+      console.log('Email function response:', { emailData, emailError });
+
+      if (emailError) {
+        console.error('Email error:', emailError);
+        throw new Error(`Erro ao enviar email: ${emailError.message}`);
+      }
 
       toast({
         title: "Código enviado!",
@@ -99,11 +112,20 @@ const InstitutionRegisterForm = () => {
         }
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
+      
+      let errorMessage = "Tente novamente mais tarde";
+      
+      if (error?.message?.includes('duplicate key')) {
+        errorMessage = "Este email já está sendo processado. Verifique sua caixa de entrada.";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro ao registrar",
-        description: "Tente novamente mais tarde",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
