@@ -18,14 +18,17 @@ serve(async (req) => {
   try {
     if (!RESEND_API_KEY) {
       console.error('RESEND_API_KEY not found in environment variables')
+      console.error('Available env variables:', Object.keys(Deno.env.toObject()))
       return new Response(
-        JSON.stringify({ error: 'Email service not configured' }),
+        JSON.stringify({ error: 'Email service not configured', debug: 'RESEND_API_KEY missing' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
         }
       )
     }
+
+    console.log('RESEND_API_KEY found, proceeding with email sending')
 
     let requestBody;
     try {
@@ -58,7 +61,7 @@ serve(async (req) => {
     console.log('Attempting to send email to:', email, 'with code:', code, 'for userType:', userType)
 
     const emailPayload = {
-      from: 'Plataforma Educativa <noreply@resend.dev>',
+      from: 'Plataforma Educativa <onboarding@resend.dev>',
       to: [email],
       subject: 'Código de Verificação - Plataforma Educativa',
       html: `

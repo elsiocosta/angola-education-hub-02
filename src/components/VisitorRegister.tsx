@@ -85,8 +85,18 @@ const VisitorRegister = () => {
       console.log('Email function response:', { emailData, emailError });
 
       if (emailError) {
-        console.error('Email error:', emailError);
-        throw new Error(`Erro ao enviar email: ${emailError.message}`);
+        console.error('Email error details:', emailError);
+        
+        // Try to get more detailed error information
+        let errorMessage = 'Erro ao enviar email de verificação';
+        
+        if (emailError.message?.includes('Email service not configured')) {
+          errorMessage = 'Serviço de email não configurado. Contacte o administrador.';
+        } else if (emailError.message) {
+          errorMessage = `Erro ao enviar email: ${emailError.message}`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       toast({
