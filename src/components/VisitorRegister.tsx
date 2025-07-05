@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
@@ -46,74 +47,39 @@ const VisitorRegister = () => {
     setIsLoading(true);
     
     try {
-      // Gerar código de verificação
-      const verificationCode = Math.random().toString().substr(2, 6);
+      // SOLUÇÃO TEMPORÁRIA: Criar conta diretamente (bypass do email)
+      console.log('Creating account directly (temporary bypass):', formData.email);
 
-      console.log('Inserting verification code for:', formData.email);
-
-      // Salvar dados temporários no banco
-      const { error: insertError } = await supabase
-        .from('verification_codes')
-        .insert({
-          email: formData.email,
-          code: verificationCode,
-          user_type: 'visitor',
-          user_data: {
+      // Criar usuário diretamente no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
             name: formData.name,
-            email: formData.email,
-            password: formData.password
-          },
-          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
-        });
-
-      if (insertError) {
-        console.error('Insert error:', insertError);
-        throw insertError;
-      }
-
-      console.log('Sending verification email to:', formData.email);
-
-      // Enviar email de verificação
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-verification-email', {
-        body: {
-          email: formData.email,
-          code: verificationCode,
-          userType: 'visitor'
+            user_type: 'visitor'
+          }
         }
       });
 
-      console.log('Email function response:', { emailData, emailError });
-
-      if (emailError) {
-        console.error('Email error details:', emailError);
-        
-        // Try to get more detailed error information
-        let errorMessage = 'Erro ao enviar email de verificação';
-        
-        if (emailError.message?.includes('Email service not configured')) {
-          errorMessage = 'Serviço de email não configurado. Contacte o administrador.';
-        } else if (emailError.message) {
-          errorMessage = `Erro ao enviar email: ${emailError.message}`;
-        }
-        
-        throw new Error(errorMessage);
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
       }
+
+      console.log('Account created successfully:', authData);
 
       toast({
-        title: "Código enviado!",
-        description: "Verifique seu email para continuar",
+        title: "Conta criada com sucesso!",
+        description: "Você já pode fazer login (modo temporário - sem verificação de email)",
+        duration: 5000,
       });
 
-      // Redirecionar para página de verificação
-      navigate('/verify-email', {
+      // Redirecionar para login
+      navigate('/login', {
         state: {
-          email: formData.email,
-          userType: 'visitor',
-          userData: {
-            name: formData.name,
-            email: formData.email,
-            password: formData.password
-          }
+          message: "Conta criada! Faça login para continuar.",
+          email: formData.email
         }
       });
       
@@ -157,6 +123,14 @@ const VisitorRegister = () => {
                 Explore as melhores instituições de ensino em Angola
               </CardDescription>
             </CardHeader>
+            
+            <Alert className="mx-6 mb-4 border-orange-200 bg-orange-50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>Modo Temporário:</strong> O sistema de verificação por email está sendo corrigido. 
+                Sua conta será criada diretamente sem verificação. Após login, você terá acesso completo à plataforma.
+              </AlertDescription>
+            </Alert>
             
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
@@ -260,7 +234,7 @@ const VisitorRegister = () => {
                   className="w-full bg-gradient-to-r from-blue-600 to-green-600"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Enviando código..." : "Criar Conta"}
+                  {isLoading ? "Criando conta..." : "Criar Conta"}
                 </Button>
                 
                 <div className="flex flex-col space-y-2 w-full">
