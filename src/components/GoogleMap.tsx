@@ -39,7 +39,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
   // Adicionar marcadores de instituições no mapa
   const addInstitutionMarkers = () => {
-    if (!mapInstanceRef.current || !institutions || !window.google) return;
+    if (!mapInstanceRef.current || !institutions || !window.google?.maps) return;
 
     // Limpar marcadores existentes
     markersRef.current.forEach(marker => marker.setMap(null));
@@ -140,6 +140,17 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     });
   };
 
+  // Função para verificar se Google Maps está completamente carregado
+  const waitForGoogleMapsAPI = async (maxAttempts = 50): Promise<boolean> => {
+    for (let attempts = 0; attempts < maxAttempts; attempts++) {
+      if (window.google?.maps?.Map && window.google?.maps?.MapTypeControlStyle) {
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return false;
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -148,13 +159,13 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         console.log("[GoogleMap] Starting initialization");
         
         // If Google Maps is already loaded, just create the map
-        if (window.google?.maps && mapRef.current && isMounted) {
+        if (window.google?.maps?.Map && window.google?.maps?.MapTypeControlStyle && mapRef.current && isMounted) {
           console.log("[GoogleMap] Google Maps already available, creating map");
           mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
             center,
             zoom,
             disableDefaultUI: false,
-            mapTypeId: 'satellite',
+            mapTypeId: 'roadmap',
             mapTypeControl: true,
             mapTypeControlOptions: {
               style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -182,15 +193,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         console.log("[GoogleMap] Loading Google Maps script");
         await loadGoogleMapsScript(data.key);
 
-        // Wait for Google Maps to be available
-        let attempts = 0;
-        while (!window.google?.maps && attempts < 50 && isMounted) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
-
-        if (!window.google?.maps) {
-          throw new Error("Google Maps failed to initialize after loading");
+        // Wait for Google Maps to be completely available
+        console.log("[GoogleMap] Waiting for Google Maps API to be ready");
+        const isReady = await waitForGoogleMapsAPI();
+        
+        if (!isReady) {
+          throw new Error("Google Maps API failed to load completely");
         }
 
         if (mapRef.current && isMounted) {
@@ -199,7 +207,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
             center,
             zoom,
             disableDefaultUI: false,
-            mapTypeId: 'satellite',
+            mapTypeId: 'roadmap',
             mapTypeControl: true,
             mapTypeControlOptions: {
               style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -208,6 +216,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
             }
           });
           setIsLoading(false);
+          setError(null);
           
           if (showInstitutions) {
             addInstitutionMarkers();

@@ -17,7 +17,7 @@ serve(async (req) => {
 
   try {
     if (!RESEND_API_KEY) {
-      console.error('RESEND_API_KEY not found')
+      console.error('RESEND_API_KEY not found in environment variables')
       return new Response(
         JSON.stringify({ error: 'Email service not configured' }),
         { 
@@ -27,8 +27,20 @@ serve(async (req) => {
       )
     }
 
-    const requestBody = await req.json()
-    console.log('Request body:', requestBody)
+    let requestBody;
+    try {
+      requestBody = await req.json()
+      console.log('Request body received:', requestBody)
+    } catch (error) {
+      console.error('Failed to parse request body:', error)
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      )
+    }
     
     const { email, code, userType } = requestBody
 
@@ -43,7 +55,44 @@ serve(async (req) => {
       )
     }
 
-    console.log('Sending email to:', email)
+    console.log('Attempting to send email to:', email, 'with code:', code, 'for userType:', userType)
+
+    const emailPayload = {
+      from: 'Plataforma Educativa <noreply@resend.dev>',
+      to: [email],
+      subject: 'Código de Verificação - Plataforma Educativa',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin-bottom: 10px;">Plataforma Educativa</h1>
+            <h2 style="color: #374151; font-weight: normal;">Verificação de Email</h2>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 25px; border-radius: 10px; margin: 20px 0;">
+            <p style="margin: 0 0 15px 0; color: #374151;">
+              Olá! Seu código de verificação para criar conta como <strong>${userType === 'visitor' ? 'Visitante' : 'Instituição'}</strong> é:
+            </p>
+            <div style="background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border: 2px dashed #e5e7eb;">
+              <span style="font-size: 36px; font-weight: bold; color: #1f2937; letter-spacing: 8px; font-family: 'Courier New', monospace;">${code}</span>
+            </div>
+            <p style="margin: 15px 0 0 0; color: #6b7280; font-size: 14px;">
+              ⏰ Este código expira em 10 minutos
+            </p>
+          </div>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              Se você não solicitou este código, pode ignorar este email com segurança.
+            </p>
+            <p style="color: #6b7280; font-size: 12px; margin: 10px 0 0 0;">
+              © 2025 Plataforma Educativa - Conectando estudantes às melhores instituições de Angola
+            </p>
+          </div>
+        </div>
+      `,
+    };
+
+    console.log('Sending email with payload:', JSON.stringify(emailPayload, null, 2))
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -51,66 +100,71 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: 'Plataforma Educativa <noreply@resend.dev>',
-        to: [email],
-        subject: 'Código de Verificação - Plataforma Educativa',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #2563eb; margin-bottom: 10px;">Plataforma Educativa</h1>
-              <h2 style="color: #374151; font-weight: normal;">Verificação de Email</h2>
-            </div>
-            
-            <div style="background: #f8fafc; padding: 25px; border-radius: 10px; margin: 20px 0;">
-              <p style="margin: 0 0 15px 0; color: #374151;">
-                Olá! Seu código de verificação para criar conta como <strong>${userType === 'visitor' ? 'Visitante' : 'Instituição'}</strong> é:
-              </p>
-              <div style="background: #ffffff; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border: 2px dashed #e5e7eb;">
-                <span style="font-size: 36px; font-weight: bold; color: #1f2937; letter-spacing: 8px; font-family: 'Courier New', monospace;">${code}</span>
-              </div>
-              <p style="margin: 15px 0 0 0; color: #6b7280; font-size: 14px;">
-                ⏰ Este código expira em 10 minutos
-              </p>
-            </div>
-            
-            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
-              <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                Se você não solicitou este código, pode ignorar este email com segurança.
-              </p>
-              <p style="color: #6b7280; font-size: 12px; margin: 10px 0 0 0;">
-                © 2025 Plataforma Educativa - Conectando estudantes às melhores instituições de Angola
-              </p>
-            </div>
-          </div>
-        `,
-      }),
+      body: JSON.stringify(emailPayload),
     })
 
     console.log('Resend API response status:', res.status)
+    console.log('Resend API response headers:', Object.fromEntries(res.headers.entries()))
+    
+    const responseText = await res.text()
+    console.log('Resend API response body:', responseText)
     
     if (!res.ok) {
-      const errorText = await res.text()
-      console.error('Resend API error:', errorText)
-      throw new Error(`Resend API error: ${res.status} - ${errorText}`)
+      console.error('Resend API error response:', {
+        status: res.status,
+        statusText: res.statusText,
+        body: responseText
+      })
+      
+      let errorMessage = `Resend API error: ${res.status} - ${res.statusText}`
+      
+      try {
+        const errorData = JSON.parse(responseText)
+        if (errorData.message) {
+          errorMessage = errorData.message
+        }
+      } catch (e) {
+        console.error('Failed to parse error response:', e)
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: errorMessage,
+          status: res.status,
+          details: responseText
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
     }
 
-    const responseData = await res.json()
-    console.log('Email sent successfully:', responseData)
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText)
+      console.log('Email sent successfully:', responseData)
+    } catch (e) {
+      console.error('Failed to parse success response:', e)
+      responseData = { success: true, rawResponse: responseText }
+    }
 
     return new Response(
-      JSON.stringify({ success: true, id: responseData.id }),
+      JSON.stringify({ success: true, id: responseData.id || 'unknown' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
   } catch (error) {
-    console.error('Function error:', error)
+    console.error('Function execution error:', error)
+    console.error('Error stack trace:', error.stack)
+    
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Internal server error',
-        details: error.toString()
+        details: error.toString(),
+        stack: error.stack
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
