@@ -1,9 +1,5 @@
 
-declare global {
-  interface Window {
-    google: typeof google;
-  }
-}
+// Remove the global declaration to fix the circular reference
 
 declare namespace google {
   namespace maps {

@@ -31,8 +31,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const mapInstance = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
+  const mapInstance = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
 
   // Apply height style if provided
   const finalClassName = height ? `${className.replace('h-96', '')} ${height}` : className;
@@ -56,10 +56,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         if (!mapRef.current) return;
 
         // Map configuration
-        const mapOptions: google.maps.MapOptions = {
+        const mapOptions = {
           center: { lat: -11.2027, lng: 17.8739 }, // Centro de Angola
           zoom: zoom,
-          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          mapTypeId: (window as any).google.maps.MapTypeId.ROADMAP,
           styles: [
             {
               featureType: 'poi',
@@ -70,7 +70,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         };
 
         // Create map
-        mapInstance.current = new google.maps.Map(mapRef.current, mapOptions);
+        mapInstance.current = new (window as any).google.maps.Map(mapRef.current, mapOptions);
 
         // Clear existing markers
         markersRef.current.forEach(marker => marker.setMap(null));
@@ -80,7 +80,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         if (showInstitutions && institutions.length > 0) {
           institutions.forEach((institution) => {
             if (institution.latitude && institution.longitude) {
-              const marker = new google.maps.Marker({
+              const marker = new (window as any).google.maps.Marker({
                 position: { lat: institution.latitude, lng: institution.longitude },
                 map: mapInstance.current,
                 title: institution.name,
@@ -91,7 +91,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                       <text x="15" y="19" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">📚</text>
                     </svg>
                   `),
-                  scaledSize: new google.maps.Size(30, 30)
+                  scaledSize: new (window as any).google.maps.Size(30, 30)
                 }
               });
 
