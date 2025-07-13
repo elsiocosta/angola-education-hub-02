@@ -35,6 +35,21 @@ import VisitorDashboard from "./pages/VisitorDashboard";
 import StudentSocialDashboard from "./pages/StudentSocialDashboard";
 import Admin from "./pages/Admin";
 
+// Páginas de estudante
+import StudentCourses from "./pages/StudentCourses";
+import StudentApplications from "./pages/StudentApplications";
+import StudentMessages from "./pages/StudentMessages";
+import StudentProfile from "./pages/StudentProfile";
+
+// Páginas de instituição
+import InstitutionStudents from "./pages/InstitutionStudents";
+import InstitutionApplications from "./pages/InstitutionApplications";
+import InstitutionReports from "./pages/InstitutionReports";
+import InstitutionSettings from "./pages/InstitutionSettings";
+
+// Páginas de visitante
+import VisitorProfile from "./pages/VisitorProfile";
+
 // Páginas de gestão institucional
 import InviteManagement from "./pages/InviteManagement";
 import CourseManagement from "./pages/CourseManagement";
@@ -120,10 +135,10 @@ const App = () => (
                 <DashboardLayout>
                   <Routes>
                     <Route path="/" element={<StudentDashboard />} />
-                    <Route path="/courses" element={<div>Meus Cursos</div>} />
-                    <Route path="/applications" element={<div>Minhas Inscrições</div>} />
-                    <Route path="/messages" element={<div>Mensagens</div>} />
-                    <Route path="/profile" element={<div>Perfil do Estudante</div>} />
+                    <Route path="/courses" element={<StudentCourses />} />
+                    <Route path="/applications" element={<StudentApplications />} />
+                    <Route path="/messages" element={<StudentMessages />} />
+                    <Route path="/profile" element={<StudentProfile />} />
                   </Routes>
                 </DashboardLayout>
               </StudentGuard>
@@ -135,11 +150,11 @@ const App = () => (
                 <DashboardLayout>
                   <Routes>
                     <Route path="/" element={<InstitutionDashboard />} />
-                    <Route path="/students" element={<div>Gestão de Estudantes</div>} />
-                    <Route path="/applications" element={<div>Gestão de Inscrições</div>} />
-                    <Route path="/reports" element={<div>Relatórios</div>} />
-                    <Route path="/settings" element={<div>Configurações</div>} />
-                    <Route path="/profile" element={<div>Perfil Institucional</div>} />
+                    <Route path="/students" element={<InstitutionStudents />} />
+                    <Route path="/applications" element={<InstitutionApplications />} />
+                    <Route path="/reports" element={<InstitutionReports />} />
+                    <Route path="/settings" element={<InstitutionSettings />} />
+                    <Route path="/profile" element={<InstitutionSettings />} />
                   </Routes>
                 </DashboardLayout>
               </InstitutionStaffGuard>
@@ -150,7 +165,7 @@ const App = () => (
               <DashboardLayout>
                 <Routes>
                   <Route path="/" element={<VisitorDashboard />} />
-                  <Route path="/profile" element={<div>Perfil do Visitante</div>} />
+                  <Route path="/profile" element={<VisitorProfile />} />
                 </Routes>
               </DashboardLayout>
             } />
