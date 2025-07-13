@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,11 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
 export const DashboardRedirect = () => {
-  const { user, session } = useAuth();
+  const { user, userProfile, session, isLoading } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      const redirectMap: Record<UserRole, string> = {
+    console.log('DashboardRedirect - user:', user?.id);
+    console.log('DashboardRedirect - userProfile:', userProfile);
+    console.log('DashboardRedirect - session:', !!session);
+    console.log('DashboardRedirect - isLoading:', isLoading);
+
+    if (userProfile && userProfile.role) {
+      const redirectMap: Record<string, string> = {
         visitor: '/dashboard/visitor',
         student: '/dashboard/student',
         institution_admin: '/dashboard/institution',
@@ -22,18 +28,22 @@ export const DashboardRedirect = () => {
         platform_admin: '/admin',
       };
 
-      const redirectPath = redirectMap[user.role];
-      if (redirectPath) {
+      const redirectPath = redirectMap[userProfile.role] || '/dashboard/visitor';
+      console.log('Redirecting to:', redirectPath);
+      
+      setTimeout(() => {
         window.location.href = redirectPath;
-      }
+      }, 500);
     }
-  }, [user]);
+  }, [userProfile, user, session, isLoading]);
 
-  if (!session) {
+  // Se não há sessão, redireciona para login
+  if (!session && !isLoading) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!user) {
+  // Se ainda está carregando
+  if (isLoading || !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-96">
@@ -60,4 +70,4 @@ export const DashboardRedirect = () => {
       </Card>
     </div>
   );
-}; 
+};

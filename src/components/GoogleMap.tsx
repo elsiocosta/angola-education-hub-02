@@ -1,290 +1,128 @@
 
-import React, { useEffect, useRef, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useInstitutions } from "@/hooks/useInstitutions";
-
-declare global {
-  interface Window {
-    google?: any;
-    initGoogleMap?: () => void;
-  }
-  var google: any;
-}
+import React, { useEffect, useRef, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface GoogleMapProps {
-  height?: string;
-  zoom?: number;
-  center?: { lat: number; lng: number };
-  showFilters?: boolean;
-  showInstitutions?: boolean;
+  institutions: Array<{
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+    institution_type: string;
+    province: string;
+  }>;
+  onMarkerClick?: (institution: any) => void;
+  className?: string;
 }
 
-const DEFAULT_CENTER = { lat: -11.2027, lng: 17.8739 };
-
-const GoogleMap: React.FC<GoogleMapProps> = ({
-  height = "400px",
-  zoom = 6,
-  center = DEFAULT_CENTER,
-  showFilters = false,
-  showInstitutions = false,
+const GoogleMap: React.FC<GoogleMapProps> = ({ 
+  institutions = [], 
+  onMarkerClick,
+  className = "w-full h-96"
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const { toast } = useToast();
-  const { data: institutions } = useInstitutions();
-
-  // Adicionar marcadores de instituições no mapa
-  const addInstitutionMarkers = () => {
-    if (!mapInstanceRef.current || !institutions || !window.google?.maps) return;
-
-    // Limpar marcadores existentes
-    markersRef.current.forEach(marker => marker.setMap(null));
-    markersRef.current = [];
-
-    institutions.forEach(institution => {
-      if (institution.latitude && institution.longitude) {
-        const marker = new window.google.maps.Marker({
-          position: { lat: institution.latitude, lng: institution.longitude },
-          map: mapInstanceRef.current,
-          title: institution.name,
-          icon: {
-            url: getMarkerIcon(institution.institution_type),
-            scaledSize: new window.google.maps.Size(32, 32),
-          }
-        });
-
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div class="p-3 max-w-xs">
-              <h3 class="font-bold text-lg mb-2">${institution.name}</h3>
-              <p class="text-sm text-gray-600 mb-1">${getInstitutionTypeLabel(institution.institution_type)}</p>
-              ${institution.address ? `<p class="text-sm mb-2">${institution.address}</p>` : ''}
-              ${institution.phone ? `<p class="text-sm mb-1">📞 ${institution.phone}</p>` : ''}
-              ${institution.email ? `<p class="text-sm mb-2">✉️ ${institution.email}</p>` : ''}
-              <button 
-                onclick="window.location.href='/institution/${institution.id}'" 
-                class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
-              >
-                Ver Detalhes
-              </button>
-            </div>
-          `
-        });
-
-        marker.addListener('click', () => {
-          infoWindow.open(mapInstanceRef.current, marker);
-        });
-
-        markersRef.current.push(marker);
-      }
-    });
-  };
-
-  const getMarkerIcon = (type: string) => {
-    const colors = {
-      primary: '#3B82F6',      // Azul
-      secondary: '#10B981',    // Verde  
-      high_school: '#8B5CF6',  // Roxo
-      university: '#F59E0B',   // Laranja
-      technical: '#EF4444'     // Vermelho
-    };
-    
-    const color = colors[type as keyof typeof colors] || '#6B7280';
-    return `data:image/svg+xml,${encodeURIComponent(`
-      <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="16" cy="16" r="12" fill="${color}" stroke="white" stroke-width="2"/>
-        <text x="16" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">🎓</text>
-      </svg>
-    `)}`;
-  };
-
-  const getInstitutionTypeLabel = (type: string) => {
-    const labels = {
-      primary: 'Ensino Primário',
-      secondary: 'Ensino Secundário', 
-      high_school: 'Ensino Médio',
-      university: 'Ensino Superior',
-      technical: 'Ensino Técnico'
-    };
-    return labels[type as keyof typeof labels] || type;
-  };
-
-  const loadGoogleMapsScript = async (apiKey: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      // Check if script already exists
-      const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-      if (existingScript) {
-        existingScript.remove();
-      }
-
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&language=pt&loading=async`;
-      script.async = true;
-      script.defer = true;
-
-      script.onload = () => {
-        console.log("[GoogleMap] Script loaded successfully");
-        resolve();
-      };
-      
-      script.onerror = () => {
-        console.error("[GoogleMap] Script failed to load");
-        reject(new Error("Failed to load Google Maps script"));
-      };
-
-      document.head.appendChild(script);
-    });
-  };
-
-  // Função para verificar se Google Maps está completamente carregado
-  const waitForGoogleMapsAPI = async (maxAttempts = 50): Promise<boolean> => {
-    for (let attempts = 0; attempts < maxAttempts; attempts++) {
-      if (window.google?.maps?.Map && window.google?.maps?.MapTypeControlStyle) {
-        return true;
-      }
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    return false;
-  };
+  const mapInstance = useRef<google.maps.Map | null>(null);
+  const markersRef = useRef<google.maps.Marker[]>([]);
 
   useEffect(() => {
-    let isMounted = true;
-
     const initializeMap = async () => {
       try {
-        console.log("[GoogleMap] Starting initialization");
-        
-        // If Google Maps is already loaded, just create the map
-        if (window.google?.maps?.Map && window.google?.maps?.MapTypeControlStyle && mapRef.current && isMounted) {
-          console.log("[GoogleMap] Google Maps already available, creating map");
-          mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-            center,
-            zoom,
-            disableDefaultUI: false,
-            mapTypeId: 'roadmap',
-            mapTypeControl: true,
-            mapTypeControlOptions: {
-              style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-              position: window.google.maps.ControlPosition.TOP_RIGHT,
-              mapTypeIds: ['roadmap', 'satellite', 'hybrid', 'terrain']
-            }
-          });
+        // Verificar se o Google Maps já está carregado
+        if (!window.google || !window.google.maps) {
+          setError('Google Maps não foi carregado corretamente');
           setIsLoading(false);
-          
-          if (showInstitutions) {
-            addInstitutionMarkers();
-          }
           return;
         }
 
-        // Get API key from Supabase
-        console.log("[GoogleMap] Fetching API key");
-        const { data, error: apiError } = await supabase.functions.invoke("get-google-maps-key");
-        
-        if (apiError || !data?.key) {
-          throw new Error(`Failed to get API key: ${apiError?.message || 'No key received'}`);
-        }
+        if (!mapRef.current) return;
 
-        // Load script with proper async loading
-        console.log("[GoogleMap] Loading Google Maps script");
-        await loadGoogleMapsScript(data.key);
-
-        // Wait for Google Maps to be completely available
-        console.log("[GoogleMap] Waiting for Google Maps API to be ready");
-        const isReady = await waitForGoogleMapsAPI();
-        
-        if (!isReady) {
-          throw new Error("Google Maps API failed to load completely");
-        }
-
-        if (mapRef.current && isMounted) {
-          console.log("[GoogleMap] Creating map instance");
-          mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-            center,
-            zoom,
-            disableDefaultUI: false,
-            mapTypeId: 'roadmap',
-            mapTypeControl: true,
-            mapTypeControlOptions: {
-              style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-              position: window.google.maps.ControlPosition.TOP_RIGHT,
-              mapTypeIds: ['roadmap', 'satellite', 'hybrid', 'terrain']
+        // Configurações do mapa
+        const mapOptions: google.maps.MapOptions = {
+          center: { lat: -11.2027, lng: 17.8739 }, // Centro de Angola
+          zoom: 6,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          styles: [
+            {
+              featureType: 'poi',
+              elementType: 'labels',
+              stylers: [{ visibility: 'off' }]
             }
-          });
-          setIsLoading(false);
-          setError(null);
-          
-          if (showInstitutions) {
-            addInstitutionMarkers();
-          }
-        }
+          ]
+        };
 
+        // Criar mapa
+        mapInstance.current = new google.maps.Map(mapRef.current, mapOptions);
+
+        // Limpar marcadores existentes
+        markersRef.current.forEach(marker => marker.setMap(null));
+        markersRef.current = [];
+
+        // Adicionar marcadores para instituições
+        institutions.forEach((institution) => {
+          if (institution.latitude && institution.longitude) {
+            const marker = new google.maps.Marker({
+              position: { lat: institution.latitude, lng: institution.longitude },
+              map: mapInstance.current,
+              title: institution.name,
+              icon: {
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                  <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="15" cy="15" r="12" fill="#3B82F6" stroke="#ffffff" stroke-width="2"/>
+                    <text x="15" y="19" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">📚</text>
+                  </svg>
+                `),
+                scaledSize: new google.maps.Size(30, 30)
+              }
+            });
+
+            // Adicionar evento de clique
+            marker.addListener('click', () => {
+              if (onMarkerClick) {
+                onMarkerClick(institution);
+              }
+            });
+
+            markersRef.current.push(marker);
+          }
+        });
+
+        setIsLoading(false);
+        setError(null);
       } catch (err) {
-        console.error("[GoogleMap] Error during initialization:", err);
-        if (isMounted) {
-          const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-          setError(errorMessage);  
-          setIsLoading(false);
-          toast({
-            title: "Erro ao carregar Google Maps",
-            description: errorMessage,
-            variant: "destructive",
-          });
-        }
+        console.error('Erro ao inicializar mapa:', err);
+        setError('Erro ao carregar o mapa');
+        setIsLoading(false);
       }
     };
 
     initializeMap();
+  }, [institutions, onMarkerClick]);
 
-    // Cleanup function
-    return () => {
-      console.log("[GoogleMap] Component unmounting");
-      isMounted = false;
-      markersRef.current.forEach(marker => marker.setMap(null));
-      markersRef.current = [];
-      mapInstanceRef.current = null;
-    };
-  }, [center.lat, center.lng, zoom, toast, showInstitutions]);
-
-  // Efeito para atualizar marcadores quando as instituições mudarem
-  useEffect(() => {
-    if (showInstitutions && institutions && mapInstanceRef.current) {
-      addInstitutionMarkers();
-    }
-  }, [institutions, showInstitutions]);
-
-  if (error) {
+  if (isLoading) {
     return (
-      <div
-        className="w-full rounded-lg border border-red-200 shadow bg-red-50 flex items-center justify-center"
-        style={{ height, minHeight: "300px" }}
-      >
-        <div className="text-red-600 font-bold text-center p-4">
-          <div>Erro ao carregar mapa</div>
-          <div className="text-sm mt-2 text-red-500">{error}</div>
+      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-lg`}>
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-2" />
+          <p className="text-gray-600">Carregando mapa...</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="relative w-full" style={{ height, minHeight: "300px" }}>
-      <div
-        ref={mapRef}
-        className="w-full h-full rounded-lg border border-gray-200 shadow"
-        style={{ background: "#e5f4ff" }}
-      />
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/70 rounded-lg">
-          <div className="text-blue-600 font-bold">Carregando mapa...</div>
+  if (error) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-gray-100 rounded-lg`}>
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Erro ao carregar mapa</p>
+          <p className="text-gray-600 text-sm">{error}</p>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  return <div ref={mapRef} className={className} />;
 };
 
 export default GoogleMap;

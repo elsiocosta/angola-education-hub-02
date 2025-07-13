@@ -1,3 +1,4 @@
+
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/types/user';
@@ -12,7 +13,7 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user, userProfile } = useAuth();
 
-  const getSidebarItems = (role: UserRole) => {
+  const getSidebarItems = (role: string) => {
     switch (role) {
       case 'student':
         return [
@@ -75,11 +76,15 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         ];
 
       default:
-        return [];
+        return [
+          { title: 'Dashboard', href: '/dashboard/visitor', icon: 'home' },
+          { title: 'Instituições', href: '/search', icon: 'building' },
+          { title: 'Feed Social', href: '/feed', icon: 'users' },
+        ];
     }
   };
 
-  const sidebarItems = userProfile ? getSidebarItems('visitor') : [];
+  const sidebarItems = userProfile?.role ? getSidebarItems(userProfile.role) : getSidebarItems('visitor');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -93,4 +98,4 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <LayoutFooter />
     </div>
   );
-}; 
+};

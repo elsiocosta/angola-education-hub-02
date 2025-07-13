@@ -1,3 +1,4 @@
+
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,7 +7,7 @@ import { ROLE_PERMISSIONS } from '@/types/user';
 
 interface RouteGuardProps {
   children: ReactNode;
-  requiredRoles?: UserRole[];
+  requiredRoles?: string[];
   requiredPermissions?: string[];
   redirectTo?: string;
 }
@@ -17,22 +18,32 @@ export const RouteGuard = ({
   requiredPermissions = [], 
   redirectTo = '/login' 
 }: RouteGuardProps) => {
-  const { user, session } = useAuth();
+  const { user, userProfile, session, isLoading } = useAuth();
   const location = useLocation();
+
+  // Se ainda está carregando, não redireciona
+  if (isLoading) {
+    return <div>Carregando...</div>;
+  }
 
   // Se não há sessão, redireciona para login
   if (!session || !user) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
+  // Se não tem perfil ainda, aguarda
+  if (!userProfile) {
+    return <div>Carregando perfil...</div>;
+  }
+
   // Verifica se o usuário tem o papel necessário
-  if (requiredRoles.length > 0 && !requiredRoles.includes(user.role as UserRole)) {
+  if (requiredRoles.length > 0 && !requiredRoles.includes(userProfile.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
   // Verifica se o usuário tem as permissões necessárias
   if (requiredPermissions.length > 0) {
-    const userPermissions = ROLE_PERMISSIONS[user.role] || [];
+    const userPermissions = ROLE_PERMISSIONS[userProfile.role as UserRole] || [];
     const hasAllPermissions = requiredPermissions.every(permission => 
       userPermissions.includes(permission)
     );
@@ -78,11 +89,15 @@ export const PlatformAdminGuard = ({ children }: { children: ReactNode }) => (
 
 // Guard para páginas públicas que redirecionam usuários logados
 export const PublicOnlyGuard = ({ children }: { children: ReactNode }) => {
-  const { session } = useAuth();
+  const { session, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div>Carregando...</div>;
+  }
   
   if (session) {
     return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;
-}; 
+};
