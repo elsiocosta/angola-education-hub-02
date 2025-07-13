@@ -87,7 +87,8 @@ const MapSection = () => {
           {/* Enhanced Google Map with satellite view */}
           <div className="relative">
             <GoogleMap 
-              height="600px" 
+              className="w-full"
+              height="600px"
               showInstitutions={true}
               showFilters={true}
               zoom={6}
