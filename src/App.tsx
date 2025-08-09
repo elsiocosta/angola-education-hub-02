@@ -15,6 +15,8 @@ import Blog from "./pages/Blog";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Pricing from "./pages/Pricing";
+import FAQ from "./pages/FAQ";
+import Contact from "./pages/Contact";
 
 // Páginas de autenticação
 import Login from "./pages/Login";
