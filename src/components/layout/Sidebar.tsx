@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -49,43 +49,46 @@ export const Sidebar = ({ items }: SidebarProps) => {
 
   return (
     <div className={cn(
-      "flex flex-col border-r bg-white transition-all duration-300",
+      "flex flex-col border-r bg-background transition-all duration-300",
       collapsed ? "w-16" : "w-64"
     )}>
       <div className="flex h-16 items-center justify-between px-4 border-b">
         {!collapsed && (
-          <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+          <h2 className="text-lg font-semibold text-foreground">Menu</h2>
         )}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setCollapsed(!collapsed)}
           className="ml-auto"
+          aria-label={collapsed ? "Expandir menu" : "Colapsar menu"}
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
       
       <ScrollArea className="flex-1">
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2" aria-label="Navegação do painel">
           {items.map((item) => {
             const Icon = iconMap[item.icon as keyof typeof iconMap];
-            const isActive = location.pathname === item.href;
-            
             return (
-              <Link
+              <NavLink
                 key={item.href}
                 to={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-blue-100 text-blue-900"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                )}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )
+                }
+                aria-current={location.pathname.startsWith(item.href) ? 'page' : undefined}
+                end={false}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
                 {!collapsed && <span>{item.title}</span>}
-              </Link>
+              </NavLink>
             );
           })}
         </nav>

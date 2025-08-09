@@ -21,10 +21,13 @@ export const usePlatformStats = () => {
         .order('updated_at', { ascending: false })
         .limit(1)
         .single();
-      
       if (error) throw error;
       return data as PlatformStats;
     },
-    refetchInterval: 30000, // Atualizar a cada 30 segundos
+    refetchInterval: 60_000,
+    staleTime: 60_000,
+    retry: 1,
+    retryDelay: (attempt) => Math.min(2000 * attempt, 8000),
+    refetchOnWindowFocus: false,
   });
 };

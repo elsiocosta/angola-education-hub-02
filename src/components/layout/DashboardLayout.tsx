@@ -87,7 +87,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const sidebarItems = userProfile?.role ? getSidebarItems(userProfile.role) : getSidebarItems('visitor');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <LayoutHeader />
       <div className="flex">
         <Sidebar items={sidebarItems} />

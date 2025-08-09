@@ -38,10 +38,13 @@ export const useInstitutions = () => {
         .select('*')
         .eq('status', 'approved')
         .order('name');
-      
       if (error) throw error;
       return data as Institution[];
-    }
+    },
+    staleTime: 60_000,
+    retry: 1,
+    retryDelay: (attempt) => Math.min(2000 * attempt, 8000),
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -53,17 +56,18 @@ export const useInstitutionsByProvince = (province?: string) => {
         .from('institutions')
         .select('*')
         .eq('status', 'approved');
-      
       if (province) {
         query = query.eq('province', province);
       }
-      
       const { data, error } = await query.order('name');
-      
       if (error) throw error;
       return data as Institution[];
     },
-    enabled: !!province
+    enabled: !!province,
+    staleTime: 60_000,
+    retry: 1,
+    retryDelay: (attempt) => Math.min(2000 * attempt, 8000),
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -75,9 +79,7 @@ export const useInstitutionStats = () => {
         .from('institutions')
         .select('status, institution_type, province')
         .eq('status', 'approved');
-      
       if (error) throw error;
-
       const stats = {
         total: data.length,
         byType: data.reduce((acc, inst) => {
@@ -89,10 +91,13 @@ export const useInstitutionStats = () => {
           return acc;
         }, {} as Record<string, number>)
       };
-
       return stats;
     },
-    refetchInterval: 30000,
+    refetchInterval: 60_000,
+    staleTime: 60_000,
+    retry: 1,
+    retryDelay: (attempt) => Math.min(2000 * attempt, 8000),
+    refetchOnWindowFocus: false,
   });
 };
 

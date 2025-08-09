@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import mapImage from '@/assets/map-interactive.jpg';
 
 interface GoogleMapProps {
   institutions?: Array<{
@@ -129,10 +130,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
   if (isLoading) {
     return (
-      <div className={`${finalClassName} flex items-center justify-center bg-gray-100 rounded-lg`} style={style}>
+      <div className={`${finalClassName} flex items-center justify-center bg-muted rounded-lg`} style={style}>
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-2" />
-          <p className="text-gray-600">Carregando mapa...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-muted-foreground">Carregando mapa...</p>
         </div>
       </div>
     );
@@ -140,10 +141,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
   if (error) {
     return (
-      <div className={`${finalClassName} flex items-center justify-center bg-gray-100 rounded-lg`} style={style}>
-        <div className="text-center">
-          <p className="text-red-600 mb-2">Erro ao carregar mapa</p>
-          <p className="text-gray-600 text-sm">{error}</p>
+      <div className={`${finalClassName} flex items-center justify-center bg-muted rounded-lg`} style={style}>
+        <div className="text-center p-4">
+          <img src={mapImage} alt="Mapa interativo de Angola (imagem estática)" className="w-full h-48 object-cover rounded-md mb-3" loading="lazy" />
+          <p className="text-destructive mb-1">Erro ao carregar mapa</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
         </div>
       </div>
     );
