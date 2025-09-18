@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 // Páginas públicas
 import Index from "./pages/Index";
@@ -80,28 +81,44 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AuthProvider>
-        <BrowserRouter>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AuthProvider>
+          <BrowserRouter>
           <Routes>
             {/* ===== ROTAS PÚBLICAS ===== */}
             <Route path="/" element={<Index />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/institution/:id" element={<Institution />} />
             <Route path="/about" element={<About />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/blog" element={<Blog />} />
+            <Route path="/discover" element={<Search />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
-            <Route path="/pricing" element={<Pricing />} />
+            
+            {/* Rotas antigas mantidas para compatibilidade */}
+            <Route path="/search" element={<Search />} />
+            <Route path="/institution/:id" element={<Institution />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/blog" element={<Blog />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             
             {/* ===== ROTAS DE AUTENTICAÇÃO (apenas para não logados) ===== */}
             <Route path="/login" element={
               <PublicOnlyGuard>
                 <Login />
+              </PublicOnlyGuard>
+            } />
+            <Route path="/signup" element={
+              <PublicOnlyGuard>
+                <RegisterOptions />
               </PublicOnlyGuard>
             } />
             <Route path="/register" element={
@@ -242,7 +259,8 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    </TooltipProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

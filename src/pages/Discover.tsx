@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, MapPin, Users, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Layout from '@/components/Layout';
 
 const Discover = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,11 +69,12 @@ const Discover = () => {
   });
 
   return (
-    <main className="container mx-auto px-4 py-10">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Descobrir Instituições</h1>
-        <p className="text-muted-foreground">Encontre a instituição ideal para sua jornada educacional</p>
-      </header>
+    <Layout>
+      <main className="container mx-auto px-4 py-10">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold mb-4">Descobrir Instituições</h1>
+          <p className="text-muted-foreground">Encontre a instituição ideal para sua jornada educacional</p>
+        </header>
 
       {/* Filtros */}
       <Card className="mb-8">
@@ -206,7 +208,8 @@ const Discover = () => {
           </CardContent>
         </Card>
       )}
-    </main>
+      </main>
+    </Layout>
   );
 };
 

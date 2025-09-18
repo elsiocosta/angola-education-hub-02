@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserRole } from "@/types/user";
 
 const LayoutHeader = () => {
@@ -26,30 +27,8 @@ const LayoutHeader = () => {
 
   const navigationItems = [
     {
-      name: 'Início',
+      name: 'Home',
       href: '/',
-      hasDropdown: false
-    },
-    {
-      name: 'Instituições',
-      href: '/search',
-      hasDropdown: true,
-      dropdownItems: [
-        {
-          name: 'Buscar Instituições',
-          href: '/search',
-          description: 'Encontre a instituição ideal para você'
-        },
-        {
-          name: 'Registrar Instituição',
-          href: '/register',
-          description: 'Cadastre sua instituição na plataforma'
-        }
-      ]
-    },
-    {
-      name: 'Feed',
-      href: '/feed',
       hasDropdown: false
     },
     {
@@ -58,8 +37,23 @@ const LayoutHeader = () => {
       hasDropdown: false
     },
     {
-      name: 'Suporte',
-      href: '/support',
+      name: 'Descobrir Instituições',
+      href: '/discover',
+      hasDropdown: false
+    },
+    {
+      name: 'FAQ',
+      href: '/faq',
+      hasDropdown: false
+    },
+    {
+      name: 'Preços',
+      href: '/pricing',
+      hasDropdown: false
+    },
+    {
+      name: 'Contato',
+      href: '/contact',
       hasDropdown: false
     }
   ];
@@ -74,7 +68,7 @@ const LayoutHeader = () => {
               <GraduationCap className="h-6 w-6 md:h-8 md:w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-lg md:text-xl font-bold text-gray-900">Ango Education</h1>
+              <h1 className="text-lg md:text-xl font-bold text-gray-900">Angola Education Hub</h1>
               <p className="text-xs text-gray-500 hidden md:block">A rede digital do ensino angolano</p>
             </div>
           </Link>
@@ -82,6 +76,7 @@ const LayoutHeader = () => {
           {/* Navigation - responsive */}
           {isMobile ? (
             <div className="flex items-center space-x-2">
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="sm"
@@ -101,6 +96,8 @@ const LayoutHeader = () => {
               
               {/* Auth Buttons */}
               <div className="flex items-center space-x-3">
+                <ThemeToggle />
+                
                 {user ? (
                   <div className="flex items-center space-x-3">
                     <span className="text-sm text-gray-600 hidden md:inline">
@@ -162,7 +159,7 @@ const LayoutHeader = () => {
                     </Link>
                     <Link to="/register">
                       <Button size="sm" className="bg-gradient-to-r from-blue-600 to-green-600">
-                        Cadastrar
+                        Registrar-se
                       </Button>
                     </Link>
                   </>
