@@ -10,6 +10,12 @@ import MapSection from '@/components/MapSection';
 import FeaturedInstitutions from '@/components/FeaturedInstitutions';
 import StatsSection from '@/components/StatsSection';
 import Layout from '@/components/Layout';
+import { Breadcrumbs } from '@/components/ux/Breadcrumbs';
+import { ScrollToTop } from '@/components/ux/ScrollToTop';
+import { AccessibilityProvider, ScreenReader } from '@/components/ux/AccessibilityEnhancements';
+import { NotificationProvider } from '@/components/ux/NotificationSystem';
+import { OnboardingProvider } from '@/components/ux/OnboardingTour';
+// ... keep existing imports
 import AdvancedSearch from '@/components/AdvancedSearch';
 import LiveStats from '@/components/LiveStats';
 import FeedbackSystem from '@/components/FeedbackSystem';
@@ -37,9 +43,25 @@ const Index = () => {
   ];
 
   return (
-    <Layout>
-      {/* Hero Section */}
-      <HeroSection />
+    <AccessibilityProvider>
+      <NotificationProvider>
+        <OnboardingProvider>
+          <Layout>
+            <div id="main-content">
+              <Breadcrumbs className="container mx-auto px-4 py-2" />
+              {/* Hero Section */}
+              <HeroSection />
+
+              {/* ... keep existing code */}
+              
+              <ScrollToTop />
+              <ScreenReader />
+            </div>
+          </Layout>
+        </OnboardingProvider>
+      </NotificationProvider>
+    </AccessibilityProvider>
+  );
 
       {/* Platform Mission */}
       <section className="py-20 bg-white">
