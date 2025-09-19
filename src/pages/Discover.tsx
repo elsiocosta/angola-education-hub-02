@@ -10,8 +10,8 @@ import Layout from '@/components/Layout';
 
 const Discover = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProvince, setSelectedProvince] = useState('');
-  const [selectedType, setSelectedType] = useState('');
+  const [selectedProvince, setSelectedProvince] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
 
   useEffect(() => {
     document.title = 'Descobrir Instituições | Ango Education';
@@ -62,8 +62,8 @@ const Discover = () => {
   const filteredInstitutions = institutions.filter(institution => {
     const matchesSearch = institution.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          institution.courses.some(course => course.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesProvince = !selectedProvince || institution.province === selectedProvince;
-    const matchesType = !selectedType || institution.type === selectedType;
+    const matchesProvince = selectedProvince === 'all' || institution.province === selectedProvince;
+    const matchesType = selectedType === 'all' || institution.type === selectedType;
     
     return matchesSearch && matchesProvince && matchesType;
   });
@@ -101,7 +101,7 @@ const Discover = () => {
                 <SelectValue placeholder="Província" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as Províncias</SelectItem>
+                <SelectItem value="all">Todas as Províncias</SelectItem>
                 {provinces.map(province => (
                   <SelectItem key={province} value={province}>{province}</SelectItem>
                 ))}
@@ -113,7 +113,7 @@ const Discover = () => {
                 <SelectValue placeholder="Tipo de Ensino" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os Tipos</SelectItem>
+                <SelectItem value="all">Todos os Tipos</SelectItem>
                 {institutionTypes.map(type => (
                   <SelectItem key={type} value={type}>{type}</SelectItem>
                 ))}
@@ -199,8 +199,8 @@ const Discover = () => {
               className="mt-4"
               onClick={() => {
                 setSearchTerm('');
-                setSelectedProvince('');
-                setSelectedType('');
+                setSelectedProvince('all');
+                setSelectedType('all');
               }}
             >
               Limpar Filtros

@@ -21,9 +21,9 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterState>({
-    province: '',
-    institutionType: '',
-    tuitionRange: ''
+    province: 'all',
+    institutionType: 'all',
+    tuitionRange: 'all'
   });
 
   const provinces = [
@@ -55,7 +55,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
   };
 
   const clearFilters = () => {
-    const clearedFilters = { province: '', institutionType: '', tuitionRange: '' };
+    const clearedFilters = { province: 'all', institutionType: 'all', tuitionRange: 'all' };
     setFilters(clearedFilters);
     onFilterChange(clearedFilters);
   };
@@ -76,9 +76,9 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
           className="w-full lg:w-auto"
           leftIcon={<Filter className="h-4 w-4" />}
           rightIcon={
-            (filters.province || filters.institutionType || filters.tuitionRange) ? (
+            (filters.province !== 'all' || filters.institutionType !== 'all' || filters.tuitionRange !== 'all') ? (
               <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                {[filters.province, filters.institutionType, filters.tuitionRange].filter(Boolean).length}
+                {[filters.province, filters.institutionType, filters.tuitionRange].filter(f => f !== 'all').length}
               </span>
             ) : null
           }
@@ -179,7 +179,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
                     <SelectValue placeholder="Todas as províncias" />
                   </SelectTrigger>
                   <SelectContent className="bg-background/95 backdrop-blur-md">
-                    <SelectItem value="">Todas as províncias</SelectItem>
+                    <SelectItem value="all">Todas as províncias</SelectItem>
                     {provinces.map((province) => (
                       <SelectItem key={province} value={province}>
                         {province}
@@ -200,7 +200,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
                     <SelectValue placeholder="Todos os níveis" />
                   </SelectTrigger>
                   <SelectContent className="bg-background/95 backdrop-blur-md">
-                    <SelectItem value="">Todos os níveis</SelectItem>
+                    <SelectItem value="all">Todos os níveis</SelectItem>
                     {institutionTypes.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
@@ -221,7 +221,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ onFilterChange, onSearch }) => 
                     <SelectValue placeholder="Todas as faixas" />
                   </SelectTrigger>
                   <SelectContent className="bg-background/95 backdrop-blur-md">
-                    <SelectItem value="">Todas as faixas</SelectItem>
+                    <SelectItem value="all">Todas as faixas</SelectItem>
                     {tuitionRanges.map((range) => (
                       <SelectItem key={range.value} value={range.value}>
                         {range.label}
